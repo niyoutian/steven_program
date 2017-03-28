@@ -32,5 +32,12 @@ AC_CHECK_FUNCS([bzero gettimeofday memset regcomp select socket strerror])
 AC_CONFIG_FILES([Makefile
 		 platform/Makefile
                  platform/common/Makefile
-                 platform/common/src/Makefile])
+                 platform/common/src/Makefile
+		 platform/mysql/Makefile
+		 platform/mysql/src/Makefile
+		 app/Makefile
+		 app/test_log/Makefile
+		 app/test_log/src/Makefile
+		 app/test_mysql/Makefile
+		 app/test_mysql/src/Makefile])
 AC_OUTPUT

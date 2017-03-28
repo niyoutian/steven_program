@@ -1,7 +1,8 @@
 AUTOMAKE_OPTIONS=foreign
 
 
-INCLUDES=-I$(top_srcdir)/platform/common/inc    
+INCLUDES=-I$(top_srcdir)/platform/common/inc   \
+	 -I$(top_srcdir)/app/test_log/inc 
 
 
 test_log_LDADD =   \

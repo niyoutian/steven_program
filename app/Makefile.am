@@ -1,4 +1,4 @@
 all:
 
-SUBDIRS = test_log
+SUBDIRS = test_log test_mysql
 
