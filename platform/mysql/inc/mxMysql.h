@@ -16,10 +16,14 @@ public:
 	bool openConnection(void);
 	bool isConnected(void);
 	bool executeQuery(string statement);
+	u32_t getAffectRows(void){return mRows;}
+	u32_t getFiledNum(void){return mysql_num_fields(mpResult);}
+	//u32_t fetchOneRow(void);
 private:
 	void setErrorInfo(void);
 	MYSQL*			mpConn;
 	MYSQL_RES*  	mpResult;
+	MYSQL_ROW    mOneRow;
 	my_ulonglong	mRows;
 	string  		mHostName;
 	string			mUserName;
