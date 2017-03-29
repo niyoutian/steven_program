@@ -24,19 +24,8 @@ public:
 	u32_t getAffectRows(void){return mRows;}
 	u32_t getFiledNum(void){return mysql_num_fields(mpResult);}
 	bool fetchOneRow(void);
-	/*template <class T>
-	 T getValueAt(int index)
-	 {
-	 	istringstream os(mOneRow[index]); 
-		os.clear();
-		T num;  
-	    os >> num;  
-	    return num;
-	 }*/
-	 template <typename T>
-			T getValueAt(u32_t index);
-	//template <> u8_t* getValueAt(u32_t index){return (u8_t*)mOneRow[index];}
-	//template <> s8_t* getValueAt(u32_t index){return (s8_t*)mOneRow[index];}
+	template <typename T>
+		T getValueAt(u32_t index);
 		
 private:
 	void freeResultSet(void);
@@ -58,6 +47,42 @@ private:
 };
 
 template <>
+inline const s8_t* mxMysql::getValueAt(u32_t index)
+{
+	return mOneRow[index];
+}
+
+template <>
+inline s8_t* mxMysql::getValueAt(u32_t index)
+{
+	return mOneRow[index];
+}
+
+template <>
+inline const u8_t* mxMysql::getValueAt(u32_t index)
+{
+	return (const u8_t*)mOneRow[index];
+}
+
+template <>
+inline u8_t* mxMysql::getValueAt(u32_t index)
+{
+	return (u8_t*)mOneRow[index];
+}
+
+template <>
+inline const string mxMysql::getValueAt(u32_t index)
+{
+	return mOneRow[index];
+}
+
+template <>
+inline string mxMysql::getValueAt(u32_t index)
+{
+	return mOneRow[index];
+}
+
+template <>
 inline u32_t mxMysql::getValueAt(u32_t index)
 {
 	stringstream os;
@@ -67,5 +92,39 @@ inline u32_t mxMysql::getValueAt(u32_t index)
 	os >> value;
 	return value;
 }
+
+template <>
+inline s32_t mxMysql::getValueAt(u32_t index)
+{
+	stringstream os;
+	os.clear();
+	os << mOneRow[index];
+	s32_t value;
+	os >> value;
+	return value;
+}
+
+template <>
+inline u64_t mxMysql::getValueAt(u32_t index)
+{
+	stringstream os;
+	os.clear();
+	os << mOneRow[index];
+	u64_t value;
+	os >> value;
+	return value;
+}
+
+template <>
+inline s64_t mxMysql::getValueAt(u32_t index)
+{
+	stringstream os;
+	os.clear();
+	os << mOneRow[index];
+	s64_t value;
+	os >> value;
+	return value;
+}
+
 
 #endif
