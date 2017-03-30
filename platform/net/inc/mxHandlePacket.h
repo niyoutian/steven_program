@@ -6,7 +6,7 @@ class mxEngineBase;
 class mxHandlePacket
 {
 public:
-	mxHandlePacket();
+	mxHandlePacket(mxEngineBase *engine);
 	virtual ~mxHandlePacket();
 	mxEngineBase *mpEngine;
 private:

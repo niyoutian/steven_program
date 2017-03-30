@@ -1,7 +1,7 @@
 #include "mxHandlePacket.h"
 
 
-mxHandlePacket::mxHandlePacket()
+mxHandlePacket::mxHandlePacket(mxEngineBase *engine) : mpEngine(engine)
 {
 	
 }

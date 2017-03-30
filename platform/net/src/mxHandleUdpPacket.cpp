@@ -1,7 +1,7 @@
 #include "mxHandleUdpPacket.h"
 
 
-mxHandleUdpPacket::mxHandleUdpPacket()
+mxHandleUdpPacket::mxHandleUdpPacket(mxEngineBase *engine) : mxHandlePacket(engine)
 {
 	
 }

@@ -6,7 +6,7 @@
 class mxHandleUdpPacket : public mxHandlePacket
 {
 public:
-	mxHandleUdpPacket();
+	mxHandleUdpPacket(mxEngineBase *engine);
 	~mxHandleUdpPacket();
 private:
 };
