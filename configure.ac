@@ -40,6 +40,8 @@ AC_CONFIG_FILES([Makefile
 		 app/Makefile
 		 app/test_log/Makefile
 		 app/test_log/src/Makefile
+                 app/test_net/Makefile
+                 app/test_net/src/Makefile
 		 app/test_mysql/Makefile
 		 app/test_mysql/src/Makefile])
 AC_OUTPUT
