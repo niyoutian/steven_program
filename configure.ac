@@ -33,6 +33,8 @@ AC_CONFIG_FILES([Makefile
 		 platform/Makefile
                  platform/common/Makefile
                  platform/common/src/Makefile
+                 platform/net/Makefile
+                 platform/net/src/Makefile
 		 platform/mysql/Makefile
 		 platform/mysql/src/Makefile
 		 app/Makefile
