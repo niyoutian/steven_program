@@ -13,6 +13,7 @@ typedef enum
 	ES_BUSY            = 2
 }EngineStatus_e;
 
+class mxHandlePacket;
 class mxEngineBase
 {
 public:
@@ -20,9 +21,12 @@ public:
 	virtual ~mxEngineBase();
 	s32_t startEngine(void);
 	s32_t stopEngine(void);
-	mxMonitoredMutex	mMutex;
-private:
+	inline bool isOnService() { return (mEngineStatus != ES_SHUTDOWN); }
 	virtual s32_t service(s32_t timeout) = 0;
+	mxMonitoredMutex	mMutex;
+	mxHandlePacket *mpHandle;
+private:
+	
 	static void* mainThreadEntry(void* engine);
 	void mainThread(void);
 	EngineStatus_e      mEngineStatus;

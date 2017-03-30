@@ -2,7 +2,7 @@
 #include "mxLog.h"
 
 
-mxEngineBase::mxEngineBase() : mEngineStatus(ES_SHUTDOWN),mThreadId(0)
+mxEngineBase::mxEngineBase() : mEngineStatus(ES_SHUTDOWN),mThreadId(0),mpHandle(NULL)
 {
 
 	
