@@ -12,6 +12,8 @@ public:
 	s32_t eventWrite(s32_t fd);
 	s32_t eventError(s32_t fd);
 private:
+	s32_t serverRead(s32_t fd);
+	s32_t clientRead(s32_t fd);
 };
 
 
