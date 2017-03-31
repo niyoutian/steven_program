@@ -10,7 +10,7 @@ mxEngineBase::mxEngineBase() : mEngineStatus(ES_SHUTDOWN),mThreadId(0),mpHandle(
 
 mxEngineBase::~mxEngineBase()
 {
-	
+	stopEngine();	
 }
 
 s32_t mxEngineBase::startEngine(void)
@@ -30,6 +30,7 @@ s32_t mxEngineBase::startEngine(void)
 
 s32_t mxEngineBase::stopEngine(void)
 {
+	stopService();
 	pthread_join(mThreadId, NULL);
 	engineLog(LOG_INFO, "stop engine thread %u successfully\n", mThreadId);	
 	return 0;

@@ -8,6 +8,9 @@ class mxHandleUdpPacket : public mxHandlePacket
 public:
 	mxHandleUdpPacket(mxEngineBase *engine);
 	~mxHandleUdpPacket();
+	s32_t eventRead(s32_t fd);
+	s32_t eventWrite(s32_t fd);
+	s32_t eventError(s32_t fd);
 private:
 };
 

@@ -10,6 +10,9 @@ class mxEngineEpoll : public mxEngineBase
 public:
 	mxEngineEpoll();
 	~mxEngineEpoll();
+	s32_t addEvent(s32_t fd, u8_t event);
+	s32_t modEvent(s32_t fd, u8_t event);
+	s32_t remEvent(s32_t fd);
 	s32_t service(s32_t timeout);
 private:
 	s32_t     mEpollFd;
