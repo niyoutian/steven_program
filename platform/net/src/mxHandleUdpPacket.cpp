@@ -29,6 +29,18 @@ s32_t mxHandleUdpPacket::eventError(s32_t fd)
 	return 0;
 }
 
+s32_t mxHandleUdpPacket::openConnect(s32_t family, s32_t type, s32_t proto, struct sockaddr &addr)
+{
+	if(createSocket(family,type,proto))
+		return -1;
+	if(setOptNonBlocking(true))
+		return -1;
+	if(bindSocket(addr))
+		return -1;
+	return 0;
+}
+
+
 s32_t mxHandleUdpPacket::serverRead(s32_t fd)
 {
 	return 0;
