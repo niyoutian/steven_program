@@ -37,11 +37,16 @@ AC_CONFIG_FILES([Makefile
                  platform/net/src/Makefile
 		 platform/mysql/Makefile
 		 platform/mysql/src/Makefile
+                 algorithms/Makefile
+                 algorithms/avlTree/Makefile
+                 algorithms/avlTree/src/Makefile
 		 app/Makefile
 		 app/test_log/Makefile
 		 app/test_log/src/Makefile
                  app/test_net/Makefile
                  app/test_net/src/Makefile
+                 app/test_avlTree/Makefile
+                 app/test_avlTree/src/Makefile
 		 app/test_mysql/Makefile
 		 app/test_mysql/src/Makefile])
 AC_OUTPUT

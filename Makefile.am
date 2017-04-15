@@ -1,4 +1,4 @@
 
 AUTOMAKE_OPTIONS=foreign
-SUBDIRS = platform app
+SUBDIRS = platform algorithms app
 
