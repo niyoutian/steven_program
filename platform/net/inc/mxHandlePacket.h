@@ -5,9 +5,12 @@
 #include "mxDef.h"
 
 #define packetLog   mxLogFmt
+
+typedef void (*cbConnectInd_f)		(void);
+
 typedef struct
 {
-	
+	cbConnectInd_f				connectInd;
 } PacketCallbacks_t;
 
 class mxEngineBase;
@@ -22,8 +25,11 @@ public:
 	virtual s32_t eventError(s32_t fd) = 0;
 	s32_t  createSocket(s32_t family, s32_t type, s32_t proto); 
 	s32_t  setOptNonBlocking(bool value);
+	s32_t  setOptReuseAddr(bool value);
 	s32_t  setOptBufferSize(u32_t rx_value, u32_t tx_value);
 	s32_t  bindSocket(struct sockaddr &addr);
+	void   registerCallBack(PacketCallbacks_t &cb){mCallback = cb;}
+	s32_t  callListenInd(void);
 	u16_t           mPort;
 	mxEngineBase*   mpEngine;
 	bool            mServerFlag;

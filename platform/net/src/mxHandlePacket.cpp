@@ -1,5 +1,6 @@
 #include <fcntl.h>
 #include "mxLog.h"
+#include "mxEngineBase.h"
 #include "mxHandlePacket.h"
 
 
@@ -48,6 +49,18 @@ s32_t  mxHandlePacket::setOptNonBlocking(bool value)
 	return 0;
 }
 
+s32_t  mxHandlePacket::setOptReuseAddr(bool value)
+{
+	s32_t flag = (value ? 1 : 0);
+	if (setsockopt(mSocket, SOL_SOCKET, SO_REUSEADDR, (char *)&flag, sizeof(flag)) < 0)
+	{
+		packetLog(LOG_ERR,"set option reuse addr failed");
+		return -1;
+	}
+	return 0;
+}
+
+
 s32_t  mxHandlePacket::setOptBufferSize(u32_t rx_value, u32_t tx_value)
 {
 	if (tx_value != 0)
@@ -87,6 +100,12 @@ s32_t  mxHandlePacket::bindSocket(struct sockaddr &addr)
 	}
 	mServerFlag = true;
 	packetLog(LOG_INFO,"bind socket %d successfully",mSocket);
+	mpEngine->addEvent(mSocket,EVENT_READ);
+	return 0;
+}
+
+s32_t  mxHandlePacket::callListenInd(void)
+{
 	return 0;
 }
 
