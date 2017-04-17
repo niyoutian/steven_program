@@ -22,6 +22,9 @@ s32_t  mxHandlePacket::createSocket(s32_t family, s32_t type, s32_t proto)
 		packetLog(LOG_ERR,"create socket failed");
 		return -1;
 	}
+	mFamily = family;
+	mType = type;
+	mProtocol = proto;
 	return 0;
 }
 
@@ -98,9 +101,7 @@ s32_t  mxHandlePacket::bindSocket(struct sockaddr &addr)
 		packetLog(LOG_ERR,"bind socket %d failed",mSocket);
 		return -1;
 	}
-	mServerFlag = true;
 	packetLog(LOG_INFO,"bind socket %d successfully",mSocket);
-	mpEngine->addEvent(mSocket,EVENT_READ);
 	return 0;
 }
 

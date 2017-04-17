@@ -27,6 +27,8 @@ public:
 	s32_t  setOptNonBlocking(bool value);
 	s32_t  setOptReuseAddr(bool value);
 	s32_t  setOptBufferSize(u32_t rx_value, u32_t tx_value);
+	s32_t  getFamily(void) {return mFamily;}
+	s32_t  getSocket(void) {return mSocket;}
 	s32_t  bindSocket(struct sockaddr &addr);
 	void   registerCallBack(PacketCallbacks_t &cb){mCallback = cb;}
 	s32_t  callListenInd(void);

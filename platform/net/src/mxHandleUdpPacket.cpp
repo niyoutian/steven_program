@@ -1,5 +1,5 @@
 #include "mxHandleUdpPacket.h"
-
+#include "mxEngineBase.h"
 
 mxHandleUdpPacket::mxHandleUdpPacket(mxEngineBase *engine) : mxHandlePacket(engine)
 {
@@ -29,6 +29,24 @@ s32_t mxHandleUdpPacket::eventError(s32_t fd)
 	return 0;
 }
 
+s32_t mxHandleUdpPacket::setOptAuxiliaryData(bool value)
+{
+	s32_t opt   = value;
+	s32_t level = IPPROTO_IP;
+	s32_t optname = IP_PKTINFO;
+	 if(getFamily() == AF_INET6)
+	 {
+	        level   =  IPPROTO_IPV6;
+	        optname =  IPV6_RECVPKTINFO;	 	
+	 }
+	 if(setsockopt(getSocket(), level, optname, &opt, sizeof(opt)) < 0)
+	 {
+	 	packetLog(LOG_ERR,"set option failed");
+		return -1;
+	 }
+	 return 0;
+}
+
 s32_t mxHandleUdpPacket::openConnect(s32_t family, s32_t type, s32_t proto, struct sockaddr &addr)
 {
 	if(createSocket(family,type,proto))
@@ -37,6 +55,8 @@ s32_t mxHandleUdpPacket::openConnect(s32_t family, s32_t type, s32_t proto, stru
 		return -1;
 	if(bindSocket(addr))
 		return -1;
+	mServerFlag = true;
+	mpEngine->addEvent(getSocket(),EVENT_READ);
 	return 0;
 }
 
