@@ -1,7 +1,7 @@
 
 AUTOMAKE_OPTIONS=foreign
 SUBDIRS = avlTree
-INCLUDES=  \
+AM_CPPFLAGS=  \
 -I$(top_srcdir)/algorithms/avlTree/inc
 
 noinst_LIBRARIES = libAlgorithms.a

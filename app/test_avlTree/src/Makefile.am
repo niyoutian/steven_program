@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS=foreign
 
 
-INCLUDES=-I$(top_srcdir)/algorithms/avlTree/inc   	
+AM_CPPFLAGS=-I$(top_srcdir)/algorithms/avlTree/inc   	
 
 
 test_avlTree_LDADD =   \

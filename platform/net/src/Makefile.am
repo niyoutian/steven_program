@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/platform/common/inc 	\
+AM_CPPFLAGS = -I$(top_srcdir)/platform/common/inc 	\
            -I$(top_srcdir)/platform/net/inc
 
 noinst_LIBRARIES = libNet.a

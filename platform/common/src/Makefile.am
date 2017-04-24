@@ -1,4 +1,4 @@
-INCLUDES=-I$(top_srcdir)/platform/common/inc 
+AM_CPPFLAGS=-I$(top_srcdir)/platform/common/inc 
 noinst_LIBRARIES = libCommon.a
 
 

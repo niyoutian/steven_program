@@ -17,7 +17,7 @@ AC_PROG_RANLIB
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h malloc.h netinet/in.h sys/socket.h sys/time.h syslog.h])
-AM_INIT_AUTOMAKE(steven_program,1.0)
+AM_INIT_AUTOMAKE
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
