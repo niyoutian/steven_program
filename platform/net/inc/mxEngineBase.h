@@ -29,9 +29,9 @@ public:
 	inline bool verifyEngineThread() { return (pthread_equal(pthread_self(), mThreadId) == 0); }
 	inline pthread_t getEngineThread() { return mThreadId; }
 	virtual s32_t service(s32_t timeout) = 0;
-	virtual s32_t addEvent(s32_t fd, u8_t event) = 0;
-	virtual s32_t modEvent(s32_t fd, u8_t event) = 0;
-	virtual s32_t remEvent(s32_t fd) = 0;
+	virtual s32_t addEvent(s32_t fd, u8_t event){return 0;}
+	virtual s32_t modEvent(s32_t fd, u8_t event){return 0;}
+	virtual s32_t remEvent(s32_t fd){return 0;}
 	
 	mxMonitoredMutex	mMutex;
 	mxHandlePacket*     mpHandle;

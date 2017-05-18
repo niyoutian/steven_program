@@ -48,5 +48,8 @@ AC_CONFIG_FILES([Makefile
                  app/test_avlTree/Makefile
                  app/test_avlTree/src/Makefile
 		 app/test_mysql/Makefile
-		 app/test_mysql/src/Makefile])
+		 app/test_mysql/src/Makefile
+		 test/Makefile
+		 test/test_libcurl/Makefile
+		 test/test_libcurl/src/Makefile])
 AC_OUTPUT
