@@ -32,15 +32,15 @@ public:
 	virtual s32_t addEvent(s32_t fd, u8_t event){return 0;}
 	virtual s32_t modEvent(s32_t fd, u8_t event){return 0;}
 	virtual s32_t remEvent(s32_t fd){return 0;}
-	
+	inline void setEngineTimeout(s32_t timeout){mTimeout = timeout;}
 	mxMonitoredMutex	mMutex;
 	mxHandlePacket*     mpHandle;
 private:
-	
 	static void* mainThreadEntry(void* engine);
 	void mainThread(void);
 	EngineStatus_e      mEngineStatus;
 	pthread_t           mThreadId;
+	s32_t				mTimeout;		/*unit ms*/
 };
 
 

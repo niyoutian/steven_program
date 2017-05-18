@@ -1,5 +1,6 @@
 #ifndef __MX_ENGINE_CURL_H__
 #define __MX_ENGINE_CURL_H__
+#include <curl/curl.h>
 #include "mxDef.h"
 #include "mxEngineBase.h"
 

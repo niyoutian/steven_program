@@ -1,5 +1,4 @@
 #include <memory.h>
-#include <curl/curl.h>
 #include "mxEngineCurl.h"
 
 
@@ -45,11 +44,9 @@ s32_t mxEngineCurl::service(s32_t timeout)
 	s32_t  max_fd;
 	s32_t nfds = 0;
 	
-	struct timeval tv;
+	struct timeval tv, *ptv=NULL;
 	memset(&tv,0,sizeof(tv));
-	tv.tv_sec = timeout/1000;
-	tv.tv_usec = (timeout%1000)*1000;
-	
+
 	s32_t running_handle_count = 0;
 	
 	struct CURLMsg *m = NULL;
@@ -58,8 +55,14 @@ s32_t mxEngineCurl::service(s32_t timeout)
 		FD_ZERO(&rd_fds);
 		FD_ZERO(&wr_fds);
 		FD_ZERO(&ex_fds);
+		if(timeout>=0)
+		{
+			tv.tv_sec = timeout/1000;
+			tv.tv_usec = (timeout%1000)*1000;
+			ptv = &tv;
+		}
 		curl_multi_fdset(mpMutliHandle, &rd_fds, &wr_fds, &ex_fds, &max_fd);
-		if ((nfds = select(max_fd + 1, &rd_fds, &wr_fds, &ex_fds, &tv)) < 0)
+		if ((nfds = select(max_fd + 1, &rd_fds, &wr_fds, &ex_fds, ptv)) < 0)
 		{
 			engineLog(LOG_WARNING,"curl select error");
 			continue;

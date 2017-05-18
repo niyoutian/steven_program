@@ -19,7 +19,6 @@ private:
 	fd_set		mWrFds;
 	fd_set		mExFds;
 	s32_t		mMaxFd;
-
 };
 
 

@@ -2,7 +2,7 @@
 #include "mxLog.h"
 
 
-mxEngineBase::mxEngineBase() : mEngineStatus(ES_SHUTDOWN),mThreadId(0),mpHandle(NULL)
+mxEngineBase::mxEngineBase() : mEngineStatus(ES_SHUTDOWN),mThreadId(0),mpHandle(NULL),mTimeout(0)
 {
 
 	
@@ -48,5 +48,5 @@ s32_t mxEngineBase::stopEngine(void)
 	mEngineStatus = ES_READY;
 	mMutex.signal();
 	mMutex.unlock();
-	service(0);
+	service(mTimeout);
  }

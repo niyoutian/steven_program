@@ -1,8 +1,10 @@
+#include <memory.h>
 #include "mxEngineSelect.h"
+#include "mxHandlePacket.h"
 
 
 
-mxEngineSelect::mxEngineSelect():mMaxFd(0)
+mxEngineSelect::mxEngineSelect():mMaxFd(-1)
 {
 	FD_ZERO(&mRdFds);
 	FD_ZERO(&mWrFds);
@@ -83,14 +85,24 @@ s32_t mxEngineSelect::service(s32_t timeout)
 	FD_ZERO(&ex_fds);
 	s32_t nfds = 0;
 
+	struct timeval tv, *ptv=NULL;
+	memset(&tv,0,sizeof(tv));
 	
 	while (isOnService())
 	{
 		rd_fds = mRdFds;
 		wr_fds = mWrFds;
 		ex_fds = mExFds;
-		if ((nfds = select(mMaxFd + 1, &rd_fds, &wr_fds, &ex_fds, NULL)) < 0)
+		if(timeout>=0)
 		{
+			tv.tv_sec = timeout/1000;
+			tv.tv_usec = (timeout%1000)*1000;
+			ptv = &tv;
+		}
+
+		if ((nfds = select(mMaxFd + 1, &rd_fds, &wr_fds, &ex_fds, ptv)) < 0)
+		{
+			engineLog(LOG_WARNING,"engine select error");
 			continue;
 		}
 		for (u32_t n = 0; n <= mMaxFd && (nfds > 0); n++)
@@ -98,15 +110,18 @@ s32_t mxEngineSelect::service(s32_t timeout)
 			bool isset = false;
 			if (FD_ISSET(n, &rd_fds))
 			{	
-				
+				isset = true;
+				mpHandle->eventRead(n);
 			}
 			if (FD_ISSET(n, &wr_fds))
 			{
-				
+				isset = true;
+				mpHandle->eventWrite(n);
 			}
 			if (FD_ISSET(n, &ex_fds))
 			{
-				
+				isset = true;
+				mpHandle->eventError(n);
 			}
 			if (isset)
 				nfds--;
