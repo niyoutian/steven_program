@@ -16,7 +16,7 @@ AC_CHECK_LIB([pthread], [main])
 AC_PROG_RANLIB
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h malloc.h netinet/in.h sys/socket.h sys/time.h syslog.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h malloc.h netinet/in.h sys/socket.h sys/time.h syslog.h stddef.h])
 AM_INIT_AUTOMAKE
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -27,7 +27,7 @@ AC_TYPE_SSIZE_T
 
 # Checks for library functions.
 AC_FUNC_MALLOC
-AC_CHECK_FUNCS([bzero gettimeofday memset regcomp select socket strerror])
+AC_CHECK_FUNCS([bzero gettimeofday memset regcomp select socket strerror strstr])
 
 AC_CONFIG_FILES([Makefile
 		 platform/Makefile
