@@ -118,7 +118,7 @@ void eANode< TYPE >::insert_before(eANode< TYPE >* loc)
 template < class TYPE >
 eANode< TYPE >* eANode< TYPE >::remove()
 {
-	mpNext->_prev = mpPrev;
+	mpNext->mpPrev = mpPrev;
 	mpPrev->mpNext = mpNext;	
 	mpNext = mpPrev = this;
 	return this;
@@ -138,13 +138,13 @@ void eANode< TYPE >::insert_after(eANode< TYPE >* loc)
 template < class TYPE >
 void eANode< TYPE >::create()
 {
-	new (mData) TYPE();
+	*(TYPE *)mData = TYPE( );
 }
 
 template < class TYPE >
 void eANode< TYPE >::create(const TYPE& obj )
 {
-	new (mData) TYPE( obj );
+	*(TYPE *)mData =  TYPE( obj );
 }
 
 template < class TYPE >
@@ -235,9 +235,9 @@ public:
 
 private:
     s8_t            		mClassName[TYPE_NAME_LEN];
-	u32_t					mAllocSize;
+	u32_t					mAllocSize;			//already assign size
     u32_t    				mTypeSize;
-    u32_t    				mNodesPerBlock;
+    u32_t    				mNodesPerBlock;		//size of per block
 	u32_t					mSize;
 	u32_t					mCapacity;
 	u32_t    				mBlocksCnt;
@@ -261,7 +261,7 @@ eArray< TYPE, SIZE >::eArray() :
 template < class TYPE, u32_t SIZE >
 void eArray< TYPE, SIZE >::gen_free_nodes(void) 
 {
-	assert((SIZE & 0xFFFF0000) != 0);
+	//assert((SIZE & 0xFFFF0000) != 0);
 	if (mBlocksCnt==mBlocksMax)
 	{
 		if ((mCapacity+NODES_PER_BLOCK)>MAX_ALLOCATIONS)
