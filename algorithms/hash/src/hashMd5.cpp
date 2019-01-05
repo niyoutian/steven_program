@@ -1,3 +1,5 @@
+#include <unistd.h>
+#include <string.h>
 #include "hashMd5.h"
 
 /* Constants for MD5Transform routine. */
@@ -18,7 +20,7 @@
 #define S43 15
 #define S44 21
 
-static const u8_t g_md5padding[MD5_BLOCK_LEN] = {
+static u8_t g_md5padding[MD5_BLOCK_LEN] = {
   0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -295,5 +297,5 @@ void HashMd5::finalMd5(u8_t digest[16])
 	/* Append length (before padding) */
 	updateMd5 (bits, 8);
 
-	Encode (digest, this->state, 16);
+	Encode (digest, mState, 16);
 }

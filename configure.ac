@@ -40,6 +40,8 @@ AC_CONFIG_FILES([Makefile
                  algorithms/Makefile
                  algorithms/avlTree/Makefile
                  algorithms/avlTree/src/Makefile
+                 algorithms/hash/Makefile
+                 algorithms/hash/src/Makefile
 		 app/Makefile
 		 app/test_log/Makefile
 		 app/test_log/src/Makefile
