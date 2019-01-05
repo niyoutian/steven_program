@@ -6,6 +6,7 @@
 int main(int argc, char* argv[])
 {
 	int i = 0;
+	u8_t buf[20]={'a',0};
 	chunk_t chunk;
 	u8_t digist[16]= {0};
 	
@@ -16,7 +17,7 @@ int main(int argc, char* argv[])
 	}
 	printf("hash type: %d\n",hash->getHashType());
 	printf("hash size: %d\n",hash->getHashSize());
-	chunk.ptr = "a";
+	chunk.ptr = buf;
 	chunk.len = 1;
 
 	hash->calcHash(chunk, digist);
@@ -25,6 +26,6 @@ int main(int argc, char* argv[])
 	{
 		printf("%02x ",digist[i]);
 	}
-	
+	printf("\n");
 	return 0;
 }
