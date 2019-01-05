@@ -12,5 +12,9 @@ typedef unsigned int            u32_t;
 typedef signed long long        s64_t;
 typedef unsigned long long      u64_t;
 
+typedef struct  {
+	u8_t *ptr; /** Pointer to start of data */
+	u32_t len; /** Length of data in bytes */
+} chunk_t;
 
 #endif
