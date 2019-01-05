@@ -1,6 +1,5 @@
 #include "stdio.h"
 #include "hashMd5.h"
-#include "test_log.h"
 #include "mxLog.h"
 
 
