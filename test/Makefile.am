@@ -1,4 +1,4 @@
 all:
 
-SUBDIRS = test_libcurl
+SUBDIRS = 
 

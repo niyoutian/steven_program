@@ -1,6 +1,6 @@
 #include <unistd.h>
 #include <string.h>
-
+#if 0
 #include "mxLog.h"
 #include "mxEngineCurl.h"
 
@@ -102,4 +102,9 @@ int main(int argc, char* argv[])
 	sleep(10);
 	return 0;
 }
-
+#else
+int main(int argc, char* argv[])
+{
+    return 0;
+}
+#endif

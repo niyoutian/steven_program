@@ -5,4 +5,4 @@ noinst_LIBRARIES = libNet.a
 
 
 libNet_a_SOURCES = \
-	 mxEngineBase.cpp mxEngineEpoll.cpp  mxEngineSelect.cpp mxEngineCurl.cpp mxHandlePacket.cpp mxHandleUdpPacket.cpp
+	 mxEngineBase.cpp mxEngineEpoll.cpp  mxEngineSelect.cpp mxHandlePacket.cpp mxHandleUdpPacket.cpp
