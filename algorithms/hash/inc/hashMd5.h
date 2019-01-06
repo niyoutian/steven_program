@@ -17,7 +17,7 @@ protected:
 private:
 	void updateMd5(u8_t *input, u32_t len);
 	void transformMd5(u32_t state[4], u8_t block[MD5_BLOCK_LEN]);
-	void finalMd5(u8_t digest[16]);
+	void finalMd5(u8_t digest[HASH_SIZE_MD5]);
 	u32_t mState[4];
 	u32_t mCount[2];               /* 记录 bit 数 */
 	u8_t  mBuffer[MD5_BLOCK_LEN];  /* 临时存放数据 */

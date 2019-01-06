@@ -79,7 +79,7 @@ void HashSha1::calcHash(chunk_t chunk, u8_t *pDigist)
 	updateSha1(chunk.ptr, chunk.len);
 	if (pDigist != NULL)
 	{
-		updateSha1(pDigist);
+		finalSha1(pDigist);
 		initHash();
 	}
 }
@@ -101,7 +101,7 @@ void HashSha1::updateSha1(u8_t *input, u32_t len)
 	}
 	mCount[1] += (len >> 29);
 
-	partLen = MD5_BLOCK_LEN - index;
+	partLen = SHA1_BLOCK_LEN - index;
 	/* Transform as many times as possible. */
 	if (len >= partLen)
 	{
@@ -109,7 +109,7 @@ void HashSha1::updateSha1(u8_t *input, u32_t len)
 		memcpy(&mBuffer[index], input, partLen);
 		transformSha1(mState, mBuffer);
 
-		for (i = partLen; i + 63 < len; i += MD5_BLOCK_LEN)
+		for (i = partLen; i + 63 < len; i += SHA1_BLOCK_LEN)
 		{
 			transformSha1(mState, &input[i]);
 		}
@@ -180,18 +180,44 @@ void HashSha1::finalSha1(u8_t digest[HASH_SIZE_SHA1])
 	u8_t bits[8];
 	u32_t index, padLen;
 
-	/* Save number of bits */
-	Encode (bits, mCount, 8);
-
-	/* Pad out to 56 mod 64. */
+	/*
+	 * get bit Length
+	 * The two-word representation of 40 is hex 00000000 00000028.
+	 * for example:
+	 * 61626364 65800000 00000000 00000000
+	 * 00000000 00000000 00000000 00000000
+	 * 00000000 00000000 00000000 00000000
+	 * 00000000 00000000 00000000 00000028
+	 */
+	bits[0] = (u8_t)(mCount[1] >> 24);
+	bits[1] = (u8_t)(mCount[1] >> 16);
+	bits[2] = (u8_t)(mCount[1] >>  8);
+	bits[3] = (u8_t)(mCount[1]);
+	bits[4] = (u8_t)(mCount[0] >> 24);
+	bits[5] = (u8_t)(mCount[0] >> 16);
+	bits[6] = (u8_t)(mCount[0] >>  8);
+	bits[7] = (u8_t)(mCount[0]);
+	
+	/*  Append Padding Bits  
+	 *  Pad out to 56 mod 64.
+	 */
 	index = (u8_t)((mCount[0] >> 3) & 0x3f);
 	padLen = (index < 56) ? (56 - index) : (120 - index);
 	updateSha1 (g_sha1padding, padLen);
 
-	/* Append length (before padding) */
-	updateSha1 (bits, 8);
+	/* Append Bits len */
+	updateSha1(bits, 8);  
 
-	Encode (digest, mState, HASH_SIZE_SHA1);
+	/* get digest from mState */
+	u32_t i, j;
+	for (i = 0, j = 0; j < HASH_SIZE_SHA1; i++, j += 4)
+	{
+		digest[j]   = (u8_t)((mState[i] >> 24) & 0xff);
+		digest[j+1] = (u8_t)((mState[i] >> 16) & 0xff);
+		digest[j+2] = (u8_t)((mState[i] >> 8) & 0xff);
+		digest[j+3] = (u8_t) (mState[i] & 0xff);
+	}
 }
+
 
 

@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <arpa/inet.h>
 #include <string.h>
 #include "hashMd5.h"
 
@@ -73,7 +74,7 @@ Rotation is separate from addition to prevent recomputation.
 /** 
  * 字节序  https://www.aliyun.com/jiaocheng/191395.html
  */
-#if BYTE_ORDER != LITTLE_ENDIAN
+//#if BYTE_ORDER != LITTLE_ENDIAN
 
 /* Encodes input (u32_t) into output (u8_t). Assumes len is
  * a multiple of 4.
@@ -105,10 +106,10 @@ static void Decode(u32_t *output, u8_t *input, u32_t len)
 	}
 }
 
-#elif BYTE_ORDER == LITTLE_ENDIAN
- #define Encode memcpy
- #define Decode memcpy
-#endif
+//#elif BYTE_ORDER == LITTLE_ENDIAN
+// #define Encode memcpy
+// #define Decode memcpy
+//#endif
 
 /**
  * RFC1321 The MD5 Message-Digest Algorithm
@@ -221,7 +222,10 @@ void HashMd5::updateMd5(u8_t *input, u32_t len)
 void HashMd5::transformMd5(u32_t state[4], u8_t block[MD5_BLOCK_LEN])
 {
 	u32_t a = state[0], b = state[1], c = state[2], d = state[3], x[16];
+	u32_t i = 0;
+	u32_t value = 0;
 
+	/* 转换字节序，转成主机序，可能是大端序，或者小端序 */
 	Decode(x, block, MD5_BLOCK_LEN);
 
 	/* Round 1 */
@@ -313,21 +317,51 @@ void HashMd5::transformMd5(u32_t state[4], u8_t block[MD5_BLOCK_LEN])
 	state[3] += d;
 }
 
-void HashMd5::finalMd5(u8_t digest[16])
+void HashMd5::finalMd5(u8_t digest[HASH_SIZE_MD5])
 {
 	u8_t bits[8];
 	u32_t index, padLen;
 
-	/* Save number of bits */
-	Encode (bits, mCount, 8);
+	/*
+	 * get bit Length
+	 * The two-word representation of 40 is hex 00000000 00000028.
+	 * for example:
+	 * 61626364 65800000 00000000 00000000
+	 * 00000000 00000000 00000000 00000000
+	 * 00000000 00000000 00000000 00000000
+	 * 00000000 00000000 28000000 00000000
+	 */
+	/* Save number of bits 
+	 * (These bits are appended as two
+     * 32-bit words and appended low-order word first in accordance with the
+	 * previous conventions.)
+	 */
+	bits[0] = (u8_t)(mCount[0]);
+	bits[1] = (u8_t)(mCount[0] >>  8);
+	bits[2] = (u8_t)(mCount[0] >> 16);
+	bits[3] = (u8_t)(mCount[0] >> 24);
+	bits[4] = (u8_t)(mCount[1]);
+	bits[5] = (u8_t)(mCount[1] >>  8);
+	bits[6] = (u8_t)(mCount[1] >> 16);
+	bits[7] = (u8_t)(mCount[1] >> 24);
 
-	/* Pad out to 56 mod 64. */
+	/*  Append Padding Bits  
+	 *  Pad out to 56 mod 64.
+	 */
 	index = (u8_t)((mCount[0] >> 3) & 0x3f);
 	padLen = (index < 56) ? (56 - index) : (120 - index);
 	updateMd5 (g_md5padding, padLen);
 
-	/* Append length (before padding) */
+	/* Append Bits len */
 	updateMd5 (bits, 8);
 
-	Encode (digest, mState, 16);
+	/* get digest from mState */
+	u32_t i, j;
+	for (i = 0, j = 0; j < HASH_SIZE_MD5; i++, j += 4)
+	{
+		digest[j]   = (u8_t) (mState[i] & 0xff);
+		digest[j+1] = (u8_t)((mState[i] >> 8) & 0xff);
+		digest[j+2] = (u8_t)((mState[i] >> 16) & 0xff);
+		digest[j+3] = (u8_t)((mState[i] >> 24) & 0xff);
+	}
 }

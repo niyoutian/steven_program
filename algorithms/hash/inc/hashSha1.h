@@ -20,7 +20,7 @@ private:
 	void finalSha1(u8_t digest[HASH_SIZE_SHA1]);
 	u32_t mState[5];
 	u32_t mCount[2];               /* 记录 bit 数 */
-	u8_t  mBuffer[MD5_BLOCK_LEN];  /* 临时存放数据 */
+	u8_t  mBuffer[SHA1_BLOCK_LEN];  /* 临时存放数据 */
 
 };
 
