@@ -27,7 +27,11 @@ static u8_t g_md5padding[MD5_BLOCK_LEN] = {
      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-/* F, G, H and I are basic MD5 functions.
+/* RFC1321 3.4 Step 4. Process Message in 16-Word Blocks
+ * F(X,Y,Z) = XY v not(X) Z
+ * G(X,Y,Z) = XZ v Y not(Z)
+ * H(X,Y,Z) = X xor Y xor Z
+ * I(X,Y,Z) = Y xor (X v not(Z))
  */
 #define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
 #define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
@@ -41,21 +45,25 @@ static u8_t g_md5padding[MD5_BLOCK_LEN] = {
 /* FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4.
 Rotation is separate from addition to prevent recomputation.
  */
+/* a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s) */
 #define FF(a, b, c, d, x, s, ac) { \
  (a) += F ((b), (c), (d)) + (x) + (u32_t)(ac); \
  (a) = ROTATE_LEFT ((a), (s)); \
  (a) += (b); \
   }
+/* a = b + ((a + G(b,c,d) + X[k] + T[i]) <<< s) */
 #define GG(a, b, c, d, x, s, ac) { \
  (a) += G ((b), (c), (d)) + (x) + (u32_t)(ac); \
  (a) = ROTATE_LEFT ((a), (s)); \
  (a) += (b); \
   }
+/* a = b + ((a + H(b,c,d) + X[k] + T[i]) <<< s) */
 #define HH(a, b, c, d, x, s, ac) { \
  (a) += H ((b), (c), (d)) + (x) + (u32_t)(ac); \
  (a) = ROTATE_LEFT ((a), (s)); \
  (a) += (b); \
   }
+/* a = b + ((a + I(b,c,d) + X[k] + T[i]) <<< s) */
 #define II(a, b, c, d, x, s, ac) { \
  (a) += I ((b), (c), (d)) + (x) + (u32_t)(ac); \
  (a) = ROTATE_LEFT ((a), (s)); \
@@ -197,6 +205,19 @@ void HashMd5::updateMd5(u8_t *input, u32_t len)
 	return ;
 }
 
+/** 完成 Step 1 (Append Padding Bits) 和 Step 2 (Append Length)
+ *  最后的消息应该是512 bit (16 (32-bit) words) 的整数倍 
+ *  Let M[0 ... N-1] denote the words of the resulting message,
+ *  where N is a multiple of 16.
+ *
+ *  Do the following:
+ *  Process each 16-word block.
+ *  For i = 0 to N/16-1 do  (每次处理512 bit)
+ *  Copy block i into X.
+ *  For j = 0 to 15 do
+ *      Set X[j] to M[i*16+j].
+ *  end
+ */
 void HashMd5::transformMd5(u32_t state[4], u8_t block[MD5_BLOCK_LEN])
 {
 	u32_t a = state[0], b = state[1], c = state[2], d = state[3], x[16];
@@ -204,6 +225,17 @@ void HashMd5::transformMd5(u32_t state[4], u8_t block[MD5_BLOCK_LEN])
 	Decode(x, block, MD5_BLOCK_LEN);
 
 	/* Round 1 */
+	/* 
+	 * a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s) 
+	 * This step uses a 64-element table T[1 ... 64] constructed from the
+	 * sine function. Let T[i] denote the i-th element of the table, which
+	 * is equal to the integer part of 4294967296 times abs(sin(i)), where i
+	 * is in radians(弧度).
+	 * 360°(角度) = 2π(弧度)
+	 * sin(1弧度) = sin(360/2π)   
+	 * sin(360/2π) * 4294967296  = 0xd76aa478
+	 */
+	
 	FF (a, b, c, d, x[ 0], S11, 0xd76aa478); /* 1 */
 	FF (d, a, b, c, x[ 1], S12, 0xe8c7b756); /* 2 */
 	FF (c, d, a, b, x[ 2], S13, 0x242070db); /* 3 */
