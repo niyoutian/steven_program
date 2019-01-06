@@ -32,6 +32,12 @@ static const u32_t sha256_K[64] = {
 	0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
 
+static u8_t g_sha256padding[SHA256_BLOCK_LEN] = {
+  0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
 
 /**
  * RFC4634 US Secure Hash Algorithms (SHA and HMAC-SHA)
@@ -93,7 +99,7 @@ void HashSha256::calcHash(chunk_t chunk, u8_t *pDigist)
 	updateSha256(chunk.ptr, chunk.len);
 	if (pDigist != NULL)
 	{
-		//finalSha1(pDigist);
+		finalSha256(pDigist);
 		initHash();
 	}
 }
@@ -123,7 +129,7 @@ void HashSha256::updateSha256(u8_t *input, u32_t len)
 		memcpy(&mBuffer[index], input, partLen);
 		transformSha256(mBuffer);
 
-		for (i = partLen; i + 63 < len; i += SHA1_BLOCK_LEN)
+		for (i = partLen; i + 63 < len; i += SHA256_BLOCK_LEN)
 		{
 			transformSha256(&input[i]);
 		}
@@ -253,7 +259,7 @@ void HashSha256::finalSha256(u8_t digest[HASH_SIZE_SHA256])
 	 */
 	index = (u8_t)((mCount[0] >> 3) & 0x3f);
 	padLen = (index < 56) ? (56 - index) : (120 - index);
-	updateSha256 (g_sha1padding, padLen);
+	updateSha256 (g_sha256padding, padLen);
 
 	/* Append Bits len */
 	updateSha256(bits, 8);  
