@@ -2,7 +2,7 @@
 #include "hashMd5.h"
 #include "mxLog.h"
 
-
+/* echo -n "abcde" |openssl dgst -md5 */
 int main(int argc, char* argv[])
 {
 	int i = 0;
