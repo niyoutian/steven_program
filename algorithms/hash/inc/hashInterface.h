@@ -11,7 +11,7 @@
 typedef enum 
 {
 	HASH_SHA1 			= 1,       /* RFC3174 */
-	HASH_SHA256	    = 2,
+	HASH_SHA256	    = 2,       /* RFC4634 */
 	HASH_SHA384		= 3,
 	HASH_SHA512		= 4,
 	/* use private use range for algorithms not defined/permitted by RFC 7427 */
@@ -19,7 +19,7 @@ typedef enum
 	HASH_MD2 			= 1025,
 	HASH_MD4			= 1026,
 	HASH_MD5 			= 1027,    /* RFC1321 */
-	HASH_SHA224		= 1028,
+	HASH_SHA224		= 1028,	   /* RFC3874 */
 	HASH_SHA3_224		= 1029,
 	HASH_SHA3_256		= 1030,
 	HASH_SHA3_384		= 1031,
