@@ -168,7 +168,7 @@ void HashSha256::transformSha256(u8_t buffer[SHA256_BLOCK_LEN])
 
 	for(t = 16; t < 64; t++)
 	{
-		W[t] =  SSIG1(W[t-2]) + W[t-7] + SSIG0(t-15) + W[t-16];
+		W[t] =  SSIG1(W[t-2]) + W[t-7] + SSIG0(W[t-15]) + W[t-16];
 	}
 	
 	/* 2. Initialize the working variables:
