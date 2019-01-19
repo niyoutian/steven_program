@@ -1,6 +1,6 @@
 #include <unistd.h>
 #include <string.h>
-#include "hashSha256.h"
+#include "hashSha2.h"
 
 /*  CH( x, y, z) = (x AND y) XOR ( (NOT x) AND z)
  *  MAJ( x, y, z) = (x AND y) XOR (x AND z) XOR (y AND z)

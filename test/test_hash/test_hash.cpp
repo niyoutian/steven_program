@@ -1,5 +1,5 @@
 #include "stdio.h"
-#include "hashSha256.h"
+#include "hashSha2.h"
 #include "mxLog.h"
 
 /* echo -n "abcde" |openssl dgst -md5 
