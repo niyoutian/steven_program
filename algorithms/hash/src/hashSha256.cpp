@@ -120,7 +120,7 @@ u32_t HashSha224::getHashSize(void)
 
 u32_t HashSha224::getHashType(void)
 {
-	return HASH_SHA224;
+	return HASH_SHA2_224;
 }
 
 void HashSha224::initHash(void)
@@ -356,7 +356,7 @@ u32_t HashSha256::getHashSize(void)
 
 u32_t HashSha256::getHashType(void)
 {
-	return HASH_SHA256;
+	return HASH_SHA2_256;
 }
 
 void HashSha256::initHash(void)
@@ -610,7 +610,7 @@ u32_t HashSha384::getHashSize(void)
 
 u32_t HashSha384::getHashType(void)
 {
-	return HASH_SHA384;
+	return HASH_SHA2_384;
 }
 
 void HashSha384::initHash(void)
@@ -866,7 +866,7 @@ u32_t HashSha512::getHashSize(void)
 
 u32_t HashSha512::getHashType(void)
 {
-	return HASH_SHA512;
+	return HASH_SHA2_512;
 }
 
 void HashSha512::initHash(void)
