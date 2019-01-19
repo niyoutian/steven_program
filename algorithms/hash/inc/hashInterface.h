@@ -20,7 +20,7 @@ typedef enum
 	HASH_MD4			= 1026,
 	HASH_MD5 			= 1027,    /* RFC1321 */
 	HASH_SHA2_224		= 1028,	   /* RFC3874 */
-	HASH_SHA3_224		= 1029,
+	HASH_SHA3_224		= 1029,    /* SHA3 »ùÓÚKeccakËã·¨ */
 	HASH_SHA3_256		= 1030,
 	HASH_SHA3_384		= 1031,
 	HASH_SHA3_512		= 1032
