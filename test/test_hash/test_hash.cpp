@@ -8,6 +8,8 @@
  * (stdin)= 03de6c570bfe24bfc328ccd7ca46b76eadaf4334
  * echo -n "abcde" | openssl dgst -sha256
  * (stdin)= 36bbe50ed96841d10443bcb670d6554f0a34b761be67ec9c4a8ad2c0c44ca42c
+ * echo -n "abcde" | openssl dgst -sha224
+ * (stdin)= bdd03d560993e675516ba5a50638b6531ac2ac3d5847c61916cfced6
  */
 int main(int argc, char* argv[])
 {
@@ -16,7 +18,7 @@ int main(int argc, char* argv[])
 	chunk_t chunk;
 	u8_t digist[60]= {0};
 	
-	HashInterface *hash = new HashSha256();
+	HashInterface *hash = new HashSha224();
 	if (hash == NULL)
 	{
 		printf("new HashSha1 error\n");
@@ -28,7 +30,7 @@ int main(int argc, char* argv[])
 
 	hash->calcHash(chunk, digist);
 	printf("sha1hash: ");
-	for(i = 0; i< 32; i++)
+	for(i = 0; i< hash->getHashSize(); i++)
 	{
 		printf("%02x ",digist[i]);
 	}

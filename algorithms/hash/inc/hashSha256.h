@@ -4,6 +4,26 @@
 
 #define SHA256_BLOCK_LEN   64
 
+class HashSha224 : public HashInterface
+{
+public:
+	HashSha224();
+	~HashSha224();
+	virtual u32_t getHashSize(void);
+	virtual u32_t getHashType(void);
+	virtual void initHash(void);
+	virtual void calcHash(chunk_t chunk, u8_t *pDigist);
+protected:
+private:
+	void updateSha224(u8_t *input, u32_t len);
+	void transformSha224(u8_t block[SHA256_BLOCK_LEN]);
+	void finalSha224(u8_t digest[HASH_SIZE_SHA224]);
+	u32_t mState[8];
+	u32_t mCount[2];               /* 记录 bit 数 */
+	u8_t  mBuffer[SHA256_BLOCK_LEN];  /* 临时存放数据 */
+
+};
+
 class HashSha256 : public HashInterface
 {
 public:

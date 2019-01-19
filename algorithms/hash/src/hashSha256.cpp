@@ -42,6 +42,242 @@ static u8_t g_sha256padding[SHA256_BLOCK_LEN] = {
 /**
  * RFC4634 US Secure Hash Algorithms (SHA and HMAC-SHA)
  */
+HashSha224::HashSha224()
+{
+	mState[0] = 0xc1059ed8;
+	mState[1] = 0x367cd507;
+	mState[2] = 0x3070dd17;
+	mState[3] = 0xf70e5939;
+	mState[4] = 0xffc00b31;
+	mState[5] = 0x68581511;
+	mState[6] = 0x64f98fa7;
+	mState[7] = 0xbefa4fa4;
+	mCount[0] = 0;
+	mCount[1] = 0;
+}
+
+HashSha224::~HashSha224()
+{
+	mState[0] = 0;
+	mState[1] = 0;
+	mState[2] = 0;
+	mState[3] = 0;
+	mState[4] = 0;
+	mState[5] = 0;
+	mState[6] = 0;
+	mState[7] = 0;
+	mCount[0] = 0;
+	mCount[1] = 0;
+}
+
+u32_t HashSha224::getHashSize(void)
+{
+	return HASH_SIZE_SHA224;
+}
+
+u32_t HashSha224::getHashType(void)
+{
+	return HASH_SHA224;
+}
+
+void HashSha224::initHash(void)
+{
+	mState[0] = 0xc1059ed8;
+	mState[1] = 0x367cd507;
+	mState[2] = 0x3070dd17;
+	mState[3] = 0xf70e5939;
+	mState[4] = 0xffc00b31;
+	mState[5] = 0x68581511;
+	mState[6] = 0x64f98fa7;
+	mState[7] = 0xbefa4fa4;
+	mCount[0] = 0;
+	mCount[1] = 0;
+}
+
+void HashSha224::calcHash(chunk_t chunk, u8_t *pDigist)
+{
+	updateSha224(chunk.ptr, chunk.len);
+	if (pDigist != NULL)
+	{
+		finalSha224(pDigist);
+		initHash();
+	}
+}
+
+void HashSha224::updateSha224(u8_t *input, u32_t len)
+{
+	u32_t i = 0;
+	u32_t index = 0;
+	u32_t partLen = 0;
+
+	/* 前一次存放数据的偏移 */
+	index = (u8_t)((mCount[0] >> 3) & 0x3F);
+	/* 更新 Bit 数 
+	 * 如果if 条件满足，说明32位mCount[0] 溢出， 高位mCount[1] 加 1
+	 */
+	if ((mCount[0] += (len << 3)) < (len << 3))
+	{
+		mCount[1]++;
+	}
+	mCount[1] += (len >> 29);
+
+	partLen = SHA256_BLOCK_LEN - index;
+	/* Transform as many times as possible. */
+	if (len >= partLen)
+	{
+		/* 拼成 64 字节 block */
+		memcpy(&mBuffer[index], input, partLen);
+		transformSha224(mBuffer);
+
+		for (i = partLen; i + 63 < len; i += SHA256_BLOCK_LEN)
+		{
+			transformSha224(&input[i]);
+		}
+		index = 0;
+	}
+	else
+	{
+		i = 0;
+	}
+
+	/* Buffer remaining input */
+	memcpy(&mBuffer[index], &input[i], len-i);
+
+	return ;
+}
+
+void HashSha224::transformSha224(u8_t buffer[SHA256_BLOCK_LEN])
+{
+	u32_t t;
+	u32_t W[SHA256_BLOCK_LEN];
+	u8_t *pos = buffer;
+
+	/* 1. Prepare the message schedule W:
+	 * For t = 0 to 15
+	 * Wt = M(i)t
+	 * For t = 16 to 63
+	 * Wt = SSIG1(W(t-2)) + W(t-7) + SSIG0(t-15) + W(t-16)
+	 * read the data, big endian byte order
+	 */
+	for(t = 0; t < 16; t++)
+	{
+		W[t] =  (((u32_t)pos[0])<<24) | (((u32_t)pos[1])<<16) |
+				(((u32_t)pos[2])<<8 ) | ((u32_t)pos[3]);
+		pos += 4;
+	}
+
+	for(t = 16; t < 64; t++)
+	{
+		W[t] =  SSIG1(W[t-2]) + W[t-7] + SSIG0(W[t-15]) + W[t-16];
+	}
+	
+	/* 2. Initialize the working variables:
+	 */
+	 u32_t  a, b, c, d, e, f, g, h;
+	a = mState[0];
+	b = mState[1];
+	c = mState[2];
+	d = mState[3];
+	e = mState[4];
+	f = mState[5];
+	g = mState[6];
+	h = mState[7];
+	
+	/* 3. Perform the main hash computation:
+	 * For t = 0 to 63
+	 * T1 = h + BSIG1(e) + CH(e,f,g) + Kt + Wt
+	 * T2 = BSIG0(a) + MAJ(a,b,c)
+	 * h = g
+	 * g = f
+	 * f = e
+	 * e = d + T1
+	 * d = c
+	 * c = b
+	 * b = a
+	 * a = T1 + T2
+	 */
+	u32_t T1, T2;
+	for(t = 0; t < 64; t++)
+	{
+		T1 = h + BSIG1(e) + CH(e,f,g) + sha256_K[t] + W[t];
+		T2 = BSIG0(a) + MAJ(a,b,c);
+		h = g;
+		g = f;
+		f = e;
+		e = d + T1;
+		d = c;
+		c = b;
+		b = a;
+		a = T1 + T2;
+	}
+
+	/* 4. Compute the intermediate hash value H(i):
+	 * H(i)0 = a + H(i-1)0
+	 * H(i)1 = b + H(i-1)1
+	 * H(i)2 = c + H(i-1)2
+	 * H(i)3 = d + H(i-1)3
+	 * H(i)4 = e + H(i-1)4
+	 * H(i)5 = f + H(i-1)5
+	 * H(i)6 = g + H(i-1)6
+	 * H(i)7 = h + H(i-1)7
+	 */
+	mState[0] += a;
+	mState[1] += b;
+	mState[2] += c;
+	mState[3] += d;
+	mState[4] += e;
+	mState[5] += f;
+	mState[6] += g;
+	mState[7] += h;
+}
+
+void HashSha224::finalSha224(u8_t digest[HASH_SIZE_SHA224])
+{
+	u8_t bits[8];
+	u32_t index, padLen;
+
+	/*
+	 * get bit Length
+	 * The two-word representation of 40 is hex 00000000 00000028.
+	 * for example:
+	 * 61626364 65800000 00000000 00000000
+	 * 00000000 00000000 00000000 00000000
+	 * 00000000 00000000 00000000 00000000
+	 * 00000000 00000000 00000000 00000028
+	 */
+	bits[0] = (u8_t)(mCount[1] >> 24);
+	bits[1] = (u8_t)(mCount[1] >> 16);
+	bits[2] = (u8_t)(mCount[1] >>  8);
+	bits[3] = (u8_t)(mCount[1]);
+	bits[4] = (u8_t)(mCount[0] >> 24);
+	bits[5] = (u8_t)(mCount[0] >> 16);
+	bits[6] = (u8_t)(mCount[0] >>  8);
+	bits[7] = (u8_t)(mCount[0]);
+	
+	/*  Append Padding Bits  
+	 *  Pad out to 56 mod 64.
+	 */
+	index = (u8_t)((mCount[0] >> 3) & 0x3f);
+	padLen = (index < 56) ? (56 - index) : (120 - index);
+	updateSha224 (g_sha256padding, padLen);
+
+	/* Append Bits len */
+	updateSha224(bits, 8);  
+
+	/* get digest from mState */
+	u32_t i, j;
+	for (i = 0, j = 0; j < HASH_SIZE_SHA224; i++, j += 4)
+	{
+		digest[j]   = (u8_t)((mState[i] >> 24) & 0xff);
+		digest[j+1] = (u8_t)((mState[i] >> 16) & 0xff);
+		digest[j+2] = (u8_t)((mState[i] >> 8) & 0xff);
+		digest[j+3] = (u8_t) (mState[i] & 0xff);
+	}
+}
+
+/**
+ * RFC4634 US Secure Hash Algorithms (SHA and HMAC-SHA)
+ */
 HashSha256::HashSha256()
 {
 	mState[0] = 0x6a09e667;
