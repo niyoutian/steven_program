@@ -47,6 +47,8 @@ AC_CONFIG_FILES([Makefile
 		 app/test_log/src/Makefile
                  app/test_net/Makefile
                  app/test_net/src/Makefile
+                 app/test_ikev2/Makefile
+                 app/test_ikev2/src/Makefile
                  app/test_avlTree/Makefile
                  app/test_avlTree/src/Makefile
 		 app/test_mysql/Makefile
