@@ -1,4 +1,4 @@
 all:
 
-SUBDIRS = test_hash
+SUBDIRS = test_hash test_crypto
 

@@ -1,5 +1,5 @@
-AM_CPPFLAGS=  
-CXXFLAGS = 
+AM_CPPFLAGS= -I$(top_srcdir)/platform/common/inc \
+	     -I$(top_srcdir)/algorithms/hash/inc 
 
 noinst_LIBRARIES = libHash.a
 
@@ -10,6 +10,3 @@ libHash_a_SOURCES = \
 	hashSha2.cpp \
 	hashHmac.cpp
 
-libHash_a_CXXFLAGS = -g -O0 \
-                     -I$(top_srcdir)/platform/common/inc \
-                     -I$(top_srcdir)/algorithms/hash/inc
