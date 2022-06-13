@@ -71,7 +71,7 @@ u32_t SymmCryptoSSl::setCryptoType(u32_t encType, u32_t keySize)
 
 	}
 	if (mpCipher == NULL) {
-		return -1;
+		return 1;
 	}
 
 	mpKey = (u8_t*)malloc(mKeyLen+1);

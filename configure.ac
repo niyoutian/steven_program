@@ -7,6 +7,7 @@ AC_CONFIG_SRCDIR([platform/common/inc/mxLog.h])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
+${CXXFLAGS="-g -O0"} #如果要对整个工程修改
 AC_PROG_CXX
 AC_PROG_CC
 

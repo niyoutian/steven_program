@@ -11,3 +11,4 @@ automake --add-missing
 ./configure
 make
 
+autoscan;autoheader;aclocal;autoconf;automake --add-missing;./configure;make
