@@ -58,7 +58,8 @@ AC_CONFIG_FILES([Makefile
 		 app/test_mysql/src/Makefile
 		 test/Makefile
 		 test/test_hash/Makefile
-                 test/test_crypto/Makefile
+		 test/test_BN/Makefile
+		 test/test_crypto/Makefile
 		 test/test_libcurl/Makefile
 		 test/test_libcurl/src/Makefile])
 AC_OUTPUT

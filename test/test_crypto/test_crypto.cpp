@@ -70,6 +70,7 @@ int encrypt(char *input_file, char *output_file, unsigned char *key,unsigned cha
 
 int decrypt(char *input_file, char *output_file, unsigned char *key,unsigned char *iv) 
 {
+#if 0
 	FILE *inFile = NULL;
 	FILE *outFile = NULL;
 	int count = 0;
@@ -118,7 +119,7 @@ int decrypt(char *input_file, char *output_file, unsigned char *key,unsigned cha
 
 	fclose(inFile);
 	fclose(outFile);
-	
+#endif
 	return 0;
 }
 
