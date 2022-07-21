@@ -6,6 +6,8 @@
 #include <openssl/ec.h>
 
 #include <openssl/evp.h>
+#include <openssl/pem.h>
+
 
 
 #define ECDH_SIZE   256
@@ -138,11 +140,130 @@ int testECDH(void)
 	return 0;
 }
 
+# define B_FORMAT_TEXT   0x8000
+# define FORMAT_UNDEF    0
+# define FORMAT_TEXT    (1 | B_FORMAT_TEXT)     /* Generic text */
+# define FORMAT_BINARY   2                      /* Generic binary */
+# define FORMAT_BASE64  (3 | B_FORMAT_TEXT)     /* Base64 */
+# define FORMAT_ASN1     4                      /* ASN.1/DER */
+# define FORMAT_PEM     (5 | B_FORMAT_TEXT)
+
+
+#define FILE_PUBA "ec_secp256k1_pubA.pem"
+#define FILE_PRIA "ec_secp256k1_A.pem"
+#define FILE_PUBB "ec_secp256k1_pubB.pem"
+#define FILE_PRIB "ec_secp256k1_B.pem"
+
+
+
+EC_KEY *getECDHprikey(const char *file)
+{
+	BIO *in = NULL;
+	EC_KEY *eckey = NULL;
+	
+	in = BIO_new_file(file, "r");
+	if (in == NULL) {
+		printf("open %s failed\n",file);
+		return NULL;
+	}
+	eckey = PEM_read_bio_ECPrivateKey(in, NULL, NULL, NULL);
+    if (eckey == NULL) {
+        printf("unable to load Key\n");
+        BIO_free(in);
+		return NULL;
+    }
+	printf("load priKey\n");
+
+	BIO_free(in);
+	return eckey;
+}
+
+const EC_POINT *getECDHpubkey(const char *file)
+{
+	BIO *in = NULL;
+	EC_KEY *eckey = NULL;
+	const EC_POINT *point = NULL;
+	
+	in = BIO_new_file(file, "r");
+	if (in == NULL) {
+		printf("open %s failed\n",file);
+		return NULL;
+	}
+	eckey = PEM_read_bio_EC_PUBKEY(in, NULL, NULL, NULL);
+    if (eckey == NULL) {
+        printf("unable to load Key\n");
+        BIO_free(in);
+		return NULL;
+    }
+	printf("load pubKey\n");
+	point = EC_KEY_get0_public_key(eckey); //传输给对方的公钥 
+
+	BIO_free(in);
+	return point;
+}
+
+unsigned char *genECDHsharedsecret2(EC_KEY *ecdh, const EC_POINT *point_peer)
+{    
+	int len;    
+	int ret = 0;
+	unsigned char *shared = (unsigned char *)malloc(ECDH_SIZE);  
+	memset(shared,0,ECDH_SIZE);
+	
+	//ComputeKey   
+	len =ECDH_compute_key(shared, ECDH_SIZE-1, point_peer, ecdh,NULL);
+	if(0 == len){ 
+		handleErrors();    
+	}
+	
+	printf("len=%d\n",len);    
+	disp("shared", shared, len);    
+	
+	return shared;
+}
+
+
+
+int testECDH_file(void) 
+{    
+	EC_KEY *PRIA_key = NULL;
+	EC_KEY *PRIB_key = NULL;
+	const EC_POINT *pointA = NULL;
+	const EC_POINT *pointB = NULL;
+
+	PRIA_key = getECDHprikey(FILE_PRIA);
+	PRIB_key = getECDHprikey(FILE_PRIB);
+
+	pointA = getECDHpubkey(FILE_PUBA);
+	pointB = getECDHpubkey(FILE_PUBB);
+
+//	const EC_GROUP *group = EC_KEY_get0_group(eckey);
+
+	/* A 计算 shared secret */
+	unsigned char *ECDH_keydataA = genECDHsharedsecret2(PRIA_key,pointB);
+	/* B 计算 shared secret */
+	unsigned char *ECDH_keydataB = genECDHsharedsecret2(PRIB_key,pointA);
+
+	if (0==memcmp(ECDH_keydataA, ECDH_keydataB, ECDH_SIZE - 1)) //算出来的共享密钥必须相同
+	{
+		printf("------sharedsecret ok------\n");
+	}
+
+	printf("To the end\n"); 
+
+end:	
+	EC_KEY_free(PRIA_key);
+	EC_KEY_free(PRIB_key);
+	free(ECDH_keydataA);    
+	free(ECDH_keydataB); 
+
+	return 0;
+}
+
 
 int main()
 { 
-	testECDH();
-
+	//testECDH();
+	testECDH_file();
 	return 0;
 }
 
