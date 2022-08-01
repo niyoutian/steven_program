@@ -65,6 +65,55 @@ u32_t SymmCryptoSSl::setCryptoType(u32_t encType, u32_t keySize)
 			mKeyLen = 8;
 			mpCipher = EVP_des_ecb();
 			break;
+		case ENCR_DES:
+			mKeyLen = 8;
+			mpCipher = EVP_get_cipherbyname("des-cbc");
+			break;
+		case ENCR_3DES:
+			mKeyLen = 24;
+			mpCipher = EVP_get_cipherbyname("des-ede3-cbc");
+			break;
+		case ENCR_IDEA:
+			mKeyLen = 16;
+			mpCipher = EVP_get_cipherbyname("idea-cbc");
+			break;
+		case ENCR_RC5:
+			/* set the key size if it is not set */
+			if (keySize == 0) {
+				mKeyLen = 16;
+			}
+			/* validate key size */
+			if (keySize < 5 || keySize > 255) {
+				break;
+			}
+			mKeyLen = keySize;
+			mpCipher = EVP_get_cipherbyname("rc5-cbc");
+			break;
+		case ENCR_CAST:
+			/* set the key size if it is not set */
+			if (keySize == 0) {
+				mKeyLen = 16;
+			}
+			/* validate key size */
+			if (keySize < 5 || keySize > 16) {
+				break;
+			}
+			mKeyLen = keySize;
+			mpCipher = EVP_get_cipherbyname("cast5-cbc");
+			break;
+		case ENCR_BLOWFISH:
+			/* set the key size if it is not set */
+			if (keySize == 0) {
+				mKeyLen = 16;
+			}
+			/* validate key size */
+			if (keySize < 5 || keySize > 56) {
+				break;
+			}
+			mKeyLen = keySize;
+			mpCipher = EVP_get_cipherbyname("bf-cbc");
+			break;
+
 		default:
 			/* OpenSSL does not support the requested algo */
 			break;

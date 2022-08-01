@@ -63,6 +63,7 @@ AC_CONFIG_FILES([Makefile
 		 test/test_rsautl/Makefile
                  test/test_ECDH/Makefile
 		 test/test_crypto/Makefile
+                 test/test_EVP/Makefile
 		 test/test_libcurl/Makefile
 		 test/test_libcurl/src/Makefile])
 AC_OUTPUT
