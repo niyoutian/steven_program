@@ -23,7 +23,9 @@ typedef enum
 	HASH_SHA3_224		= 1029,    /* SHA3 »ùÓÚKeccakËã·¨ */
 	HASH_SHA3_256		= 1030,
 	HASH_SHA3_384		= 1031,
-	HASH_SHA3_512		= 1032
+	HASH_SHA3_512		= 1032,
+	HASH_SM3		    = 1100
+
 }HashType_e;
 
 #define HASH_SIZE_MD2		16

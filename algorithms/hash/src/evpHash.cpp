@@ -22,8 +22,13 @@ evpHash::~evpHash()
 u32_t evpHash::setHashType(u32_t type)
 {
 	switch (type) {
+		case HASH_MD4:
+			mpMd = EVP_get_digestbyname("MD4");
+			mHashType = HASH_MD4;
+			break;
+
 		case HASH_MD5:
-			mpMd = EVP_get_digestbyname("md5");
+			mpMd = EVP_get_digestbyname("MD5");
 			mHashType = HASH_MD5;
 			break;
 		case HASH_SHA1:
@@ -44,8 +49,29 @@ u32_t evpHash::setHashType(u32_t type)
 			mHashType = HASH_SHA2_384;
 			break;
 		case HASH_SHA2_512:
-			mpMd = EVP_get_digestbyname("sha512");
+			mpMd = EVP_get_digestbyname("SHA512");
 			mHashType = HASH_SHA2_512;
+			break;
+		case HASH_SHA3_224:
+			mpMd = EVP_get_digestbyname("SHA3-224");
+			mHashType = HASH_SHA3_224;
+			break;
+		case HASH_SHA3_256:
+			mpMd = EVP_get_digestbyname("SHA3-256");
+			mHashType = HASH_SHA3_256;
+			break;
+		case HASH_SHA3_384:
+			mpMd = EVP_get_digestbyname("SHA3-384");
+			mHashType = HASH_SHA3_384;
+			break;
+		case HASH_SHA3_512:
+			mpMd = EVP_get_digestbyname("SHA3-512");
+			mHashType = HASH_SHA3_512;
+			break;
+
+		case HASH_SM3:
+			mpMd = EVP_get_digestbyname("SM3");
+			mHashType = HASH_SM3;
 			break;
 
 		default:
