@@ -9,5 +9,6 @@ libHash_a_SOURCES = \
 	hashSha1.cpp \
 	hashSha2.cpp \
 	hashHmac.cpp \
-        evpHash.cpp
+        evpHash.cpp \
+	evpHmac.cpp
 
