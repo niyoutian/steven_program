@@ -123,7 +123,7 @@ int decrypt(char *input_file, char *output_file, unsigned char *key,unsigned cha
 	return 0;
 }
 
-
+//openssl enc -d -aes-128-cbc -in 220428153755874438007SURco.gz -iv 667b02a85c61c786def4521b060265e8 -K 8cc72b05705d5c46f412af8cbed55aad -out plain.gz
 int main(int argc, char* argv[])
 {
 	unsigned char key[16]={0x8c,0xc7,0x2b,0x05,0x70,0x5d,0x5c,0x46,0xf4,0x12,0xaf,0x8c,0xbe,0xd5,0x5a,0xad};

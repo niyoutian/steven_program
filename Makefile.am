@@ -1,4 +1,4 @@
 
 AUTOMAKE_OPTIONS=foreign
-SUBDIRS = platform algorithms app test
+SUBDIRS = platform algorithms library app test
 

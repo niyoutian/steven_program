@@ -45,6 +45,9 @@ AC_CONFIG_FILES([Makefile
                  algorithms/hash/src/Makefile
                  algorithms/symmCrypto/Makefile
                  algorithms/symmCrypto/src/Makefile
+                 library/Makefile
+                 library/xfrm/Makefile
+                 library/xfrm/src/Makefile
 		 app/Makefile
 		 app/test_log/Makefile
 		 app/test_log/src/Makefile
@@ -64,6 +67,7 @@ AC_CONFIG_FILES([Makefile
                  test/test_ECDH/Makefile
 		 test/test_crypto/Makefile
                  test/test_EVP/Makefile
+                 test/test_xfrm/Makefile
 		 test/test_libcurl/Makefile
 		 test/test_libcurl/src/Makefile])
 AC_OUTPUT
