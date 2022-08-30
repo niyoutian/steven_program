@@ -1,4 +1,4 @@
 
 AUTOMAKE_OPTIONS=foreign
-SUBDIRS = common net mysql
+SUBDIRS = common net mysql process
 

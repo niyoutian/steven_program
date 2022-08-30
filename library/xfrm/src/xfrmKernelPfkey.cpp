@@ -59,12 +59,11 @@ u32_t xfrmKernelPfkey::createSocket(u32_t registerEvents)
  */
 u32_t xfrmKernelPfkey::getSpi(struct sockaddr *pSrc, struct sockaddr *pDst, u8_t protocol, u32_t& spi)
 {
-#if 1
 	unsigned char request[PFKEY_BUFFER_SIZE];
 	struct sadb_msg *msg, *out;
 	struct sadb_spirange *range;
 	//pfkey_msg_t response;
-	uint32_t received_spi = 0;
+	u32_t received_spi = 0;
 	size_t len;
 
 	memset(&request, 0, sizeof(request));
@@ -74,6 +73,9 @@ u32_t xfrmKernelPfkey::getSpi(struct sockaddr *pSrc, struct sockaddr *pDst, u8_t
 	msg->sadb_msg_type = SADB_GETSPI;
 	msg->sadb_msg_satype = convertProtoToSaType(protocol);
 	msg->sadb_msg_len = PFKEY_LEN(sizeof(struct sadb_msg));
+	msg->sadb_msg_seq = mSequence;
+	msg->sadb_msg_pid = getpid();    /*unistd.h*/
+
 
 	addAddrExt(msg, pSrc, SADB_EXT_ADDRESS_SRC, 0, 0);
 	addAddrExt(msg, pDst, SADB_EXT_ADDRESS_DST, 0, 0);
@@ -85,9 +87,40 @@ u32_t xfrmKernelPfkey::getSpi(struct sockaddr *pSrc, struct sockaddr *pDst, u8_t
 	range->sadb_spirange_max = mConfigSpiMax;
 	PFKEY_EXT_ADD(msg, range);
 
+	if (sendPfkeySocket(mSocket ,msg, &out, &len) == STATUS_SUCCESS) {
+		if (out->sadb_msg_errno) {
+			mxLogFmt(LOG_DEBUG,"allocating SPI failed: %s (%d)\n",strerror(out->sadb_msg_errno), out->sadb_msg_errno);
+		} else {
+			struct sadb_ext* ext = NULL;
+			
+			len -= sizeof(struct sadb_msg);
+			ext = (struct sadb_ext*)(((char*)out) + sizeof(struct sadb_msg));
+			
+			while (PFKEY_EXT_OK(ext,len)) {
+				if ((ext->sadb_ext_type > SADB_EXT_MAX) || (!ext->sadb_ext_type)) {
+					mxLogFmt(LOG_DEBUG,"type of PF_KEY extension (%d) is invalid\n",ext->sadb_ext_type);
+					break;
+				}
 
-#endif
-	return 0;
+				if (ext->sadb_ext_type == SADB_EXT_SA) {
+					struct sadb_sa *sa = (struct sadb_sa *)ext;
+					received_spi = sa->sadb_sa_spi;
+					mxLogFmt(LOG_DEBUG,"allocating SPI %08x sucess\n",received_spi);
+					break;
+						
+				}
+				ext = PFKEY_EXT_NEXT_LEN(ext, len);
+			}
+		}
+		free(out);
+	}
+	
+	if (received_spi == 0) {
+		return STATUS_FAILED;
+	}
+	spi = received_spi;
+	
+	return STATUS_SUCCESS;
 }
 
 /**
@@ -124,6 +157,21 @@ u32_t xfrmKernelPfkey::RegisterPfkeySocket(u8_t sa_type)
 	return STATUS_SUCCESS;
 }
 
+/*
+<linux/pfkeyv2.h>
+
+struct sadb_msg {
+	uint8_t		sadb_msg_version;
+	uint8_t		sadb_msg_type;
+	uint8_t		sadb_msg_errno;
+	uint8_t		sadb_msg_satype;
+	uint16_t	sadb_msg_len;
+	uint16_t	sadb_msg_reserved;
+	uint32_t	sadb_msg_seq;
+	uint32_t	sadb_msg_pid;
+} __attribute__((packed));
+
+*/
 /**
  * Send a message to a specific PF_KEY socket and handle the response.
  */
@@ -133,10 +181,8 @@ u32_t xfrmKernelPfkey::sendPfkeySocket(s32_t socket,struct sadb_msg *in, struct 
 	struct sadb_msg *msg;
 	int in_len, len;
 
+	memset(buf, 0, sizeof(buf));
 	mMutex.lock();
-	in->sadb_msg_seq = mSequence;
-	in->sadb_msg_pid = getpid();    /*unistd.h*/
-
 	in_len = PFKEY_USER_LEN(in->sadb_msg_len);
 	while (true)
 	{

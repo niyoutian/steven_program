@@ -38,6 +38,8 @@ AC_CONFIG_FILES([Makefile
                  platform/net/src/Makefile
 		 platform/mysql/Makefile
 		 platform/mysql/src/Makefile
+                 platform/process/Makefile
+                 platform/process/src/Makefile
                  algorithms/Makefile
                  algorithms/avlTree/Makefile
                  algorithms/avlTree/src/Makefile
