@@ -22,8 +22,8 @@ int main(int argc, char* argv[])
 	//xfrmKernelInterface *netlink = new xfrmKernelNetlink(); 
 	xfrmKernelInterface *netlink = new xfrmKernelPfkey(); 
 
-	printf("netlink\n");
-	mxLogInit("net");
+	printf("netlink %x %x\n",LOG_WARNING,LOG_ERR);
+	mxLogInit2(MXLOG_STDIO, "net");
 	netlink->createSocket(0);
 	//https://blog.csdn.net/qingzhuyuxian/article/details/79736821
 	struct sockaddr_in src_addrV4;
