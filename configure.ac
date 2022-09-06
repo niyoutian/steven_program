@@ -50,6 +50,8 @@ AC_CONFIG_FILES([Makefile
                  library/Makefile
                  library/xfrm/Makefile
                  library/xfrm/src/Makefile
+		 library/credentials/Makefile
+		 library/credentials/src/Makefile
 		 app/Makefile
 		 app/test_log/Makefile
 		 app/test_log/src/Makefile
@@ -70,6 +72,7 @@ AC_CONFIG_FILES([Makefile
 		 test/test_crypto/Makefile
                  test/test_EVP/Makefile
                  test/test_xfrm/Makefile
+                 test/test_cert/Makefile
 		 test/test_libcurl/Makefile
 		 test/test_libcurl/src/Makefile])
 AC_OUTPUT

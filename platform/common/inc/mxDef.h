@@ -17,4 +17,24 @@ typedef struct  {
 	u32_t len; /** Length of data in bytes */
 } chunk_t;
 
+/**
+ * Empty chunk.
+ */
+//chunk_t chunk_empty = { NULL, 0 };
+
+/**
+ * Create a new chunk pointing to "ptr" with length "len"
+ */
+static inline chunk_t chunk_create(u8_t *ptr, size_t len)
+{
+	chunk_t chunk = {ptr, len};
+	return chunk;
+}
+
+/**
+ * Allocate a chunk on the heap
+ */
+#define chunk_alloc(bytes) ({size_t x = (bytes); chunk_create(x ? malloc(x) : NULL, x);})
+
+
 #endif

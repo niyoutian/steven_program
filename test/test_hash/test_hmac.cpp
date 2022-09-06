@@ -161,7 +161,7 @@ void SKEYSEED()
 void KEYMAT()
 {
 	int i = 0;
-	chunk_t chunk_empty = {NULL,0};
+	chunk_t chunk_empty2 = {NULL,0};
 
 	u8_t mac_key[16] = {0xb6,0x0e,0x1e,0x9b,0x9f,0x43,0xd5,0x32,0xeb,0x5c,0x6c,0x5f,0x23,0xdd,0x94,0x58};
 
@@ -189,7 +189,7 @@ void KEYMAT()
 	chunk_t out = {NULL,0};
 	out.ptr = (u8_t*)malloc(size);
 	out.len = size;
-	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty);  //chunk_empty.ptr == NULL   append text
+	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty2);  //chunk_empty.ptr == NULL   append text
 
 	/*T1 = prf (K, S | 0x01)*/
 	u8_t count = 0x01;
@@ -205,8 +205,8 @@ void KEYMAT()
 
 /*  	 T2 = prf (K, T1 | S | 0x02)  sk_ai*/
 
-	hmac->getHashHmac(out, chunk_empty);
-	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty);
+	hmac->getHashHmac(out, chunk_empty2);
+	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty2);
 	count++;
 	hmac->getHashHmac(counter, out);
 
@@ -219,8 +219,8 @@ void KEYMAT()
 	
 /*		 T3 = prf (K, T2 | S | 0x03)  sk_ar*/
 
-	hmac->getHashHmac(out, chunk_empty);
-	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty);
+	hmac->getHashHmac(out, chunk_empty2);
+	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty2);
 	count++;
 	hmac->getHashHmac(counter, out);
 
@@ -238,16 +238,16 @@ void KEYMAT()
 
 /*		 T4 = prf (K, T3 | S | 0x04)  sk_ei 3des*/
 	
-	hmac->getHashHmac(out, chunk_empty);
-	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty);
+	hmac->getHashHmac(out, chunk_empty2);
+	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty2);
 	count++;
 	hmac->getHashHmac(counter, out);
 	/* 3des 长度24 ，前16字节 */
 	memcpy(des3.ptr, out.ptr, out.len);
 /*		 T5 = prf (K, T4 | S | 0x05)  sk_ei 3des*/
 
-	hmac->getHashHmac(out, chunk_empty);
-	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty);
+	hmac->getHashHmac(out, chunk_empty2);
+	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty2);
 	count++;
 	hmac->getHashHmac(counter, out);
 	memcpy(des3.ptr+16, out.ptr, 8);
@@ -261,8 +261,8 @@ void KEYMAT()
 		
 	/*		 T6 = prf (K, T5 | S | 0x06)  sk_er 3des*/
 	memcpy(des3.ptr, out.ptr+8, 8);
-	hmac->getHashHmac(out, chunk_empty);
-	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty);
+	hmac->getHashHmac(out, chunk_empty2);
+	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty2);
 	count++;
 	hmac->getHashHmac(counter, out);
 	memcpy(des3.ptr+8, out.ptr, out.len);
@@ -276,8 +276,8 @@ void KEYMAT()
 
 /*		 T7 = prf (K, T6 | S | 0x07)  sk_pi */
 	
-	hmac->getHashHmac(out, chunk_empty);
-	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty);
+	hmac->getHashHmac(out, chunk_empty2);
+	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty2);
 	count++;
 	hmac->getHashHmac(counter, out);
 	printf("sk_pi:");
@@ -290,8 +290,8 @@ void KEYMAT()
 
 /*		 T8 = prf (K, T7 | S | 0x08)  sk_pr */
 	
-	hmac->getHashHmac(out, chunk_empty);
-	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty);
+	hmac->getHashHmac(out, chunk_empty2);
+	hmac->getHashHmac(NiNrSPIiSPIr, chunk_empty2);
 	count++;
 	hmac->getHashHmac(counter, out);
 	printf("sk_pr:");
