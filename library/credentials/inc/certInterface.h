@@ -1,5 +1,7 @@
 #ifndef __CERT_INTERFACE_H__
 #define __CERT_INTERFACE_H__
+#include "mxDef.h"
+//#include "mxStatus.h"
 
 
 
@@ -84,6 +86,7 @@ class certInterface
 public:
 	certInterface();
 	~certInterface();
+	virtual u32_t getCertType(void) = 0;
 private:
 };
 

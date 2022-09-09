@@ -1,0 +1,4 @@
+(certMgr:[rootca_list])[rootca_list]->[root_ca1]-->{flow: east;}[root_ca2]
+[root_ca1]-->{ flow: down; }[inter_ca]-->{flow: down;}[ee_cert]
+
+
