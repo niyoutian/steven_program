@@ -32,6 +32,7 @@ int main(int argc, char* argv[])
 #endif
 	cert->getCertIssuer();
 	cert->showCertSubject();
+	cert->parseCertExtensions();
     return 0;
 }
 

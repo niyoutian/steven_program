@@ -3,6 +3,8 @@
 #include "mxDef.h"
 //#include "mxStatus.h"
 
+/* constraints are currently restricted to the range 0..127 */
+#define X509_NO_CONSTRAINT	255
 
 
 /**

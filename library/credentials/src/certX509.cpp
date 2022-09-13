@@ -2,6 +2,7 @@
 #include <openssl/bio.h>
 #include <openssl/pem.h>
 #include <openssl/ossl_typ.h>
+#include <openssl/x509v3.h>
 #include "mxLog.h"
 #include "certX509.h"
 
@@ -257,32 +258,225 @@ u32_t certX509::parseCertExtensions(void)
 	
 		ext = sk_X509_EXTENSION_value(extensions, i);
 		switch (OBJ_obj2nid(X509_EXTENSION_get_object(ext))) {
+			case NID_basic_constraints://nid=87
+				ok = parseBasicConstraintsExt(ext);
+				break;
+			case NID_key_usage:    //nid=83
+				ok = parseKeyUsageExt(ext);
+				break;
 			case NID_info_access:
 				break;
-			case NID_authority_key_identifier:
+			case NID_authority_key_identifier: //nid=90
+				ok = parseAuthKeyIdentifierExt(ext);
 				break;
-			case NID_subject_key_identifier:
+			case NID_subject_key_identifier: //nid=82
+				ok = parseSubjectKeyIdentifierExt(ext);
 				break;
 			case NID_subject_alt_name:
 				break;
 			case NID_issuer_alt_name:
 				break;
-			case NID_basic_constraints:
-				break;
-			case NID_key_usage:
-				break;
 			case NID_ext_key_usage:
+				ok = parseExtKeyUsageExt(ext);
 				break;
 			case NID_crl_distribution_points:
 				break;
 			case NID_sbgp_ipAddrBlock:
 				break;
 			default:
+				ok = X509_EXTENSION_get_critical(ext) == 0;
+				if (!ok) {
+					char buf[80] = "";
+					OBJ_obj2txt(buf, sizeof(buf),X509_EXTENSION_get_object(ext), 0);
+					mxLogFmt(LOG_DEBUG,"found unsupported critical X.509 extension: %s\n",buf);
+				}
+
 				break;
 
+		}
+		if (!ok) {
+			return false;
 		}
 	}
 
 	return 0;
 }
+
+/**
+ * parse basic constraints
+ * OBJ_basic_constraints="\x55\x1D\x13"
+ 000001f0  xx xx xx a3 81 b2 30 81	af 30 12 06 03 55 1d 13  |......0..0...U..|
+ 00000200  01 01 ff 04 08 30 06 01	01 ff 02 01 01 30 0b 06  |.....0.......0..|
+ 00000210  03 55 1d 0f 04 04 03 02	01 06 30 1d 06 03 55 1d  |.U........0...U.|
+ 00000220  0e 04 16 04 14 5d a7 dd	70 06 51 32 7e e7 b6 6d  |.....]..p.Q2~..m|
+ 00000230  b3 b5 e5 e0 60 ea 2e 4d	ef 30 6d 06 03 55 1d 23  |....`..M.0m..U.#|
+ 00000240  04 66 30 64 80 14 5d a7	dd 70 06 51 32 7e e7 b6  |.f0d..]..p.Q2~..|
+ 00000250  6d b3 b5 e5 e0 60 ea 2e	4d ef a1 49 a4 47 30 45  |m....`..M..I.G0E|
+ 00000260  31 0b 30 09 06 03 55 04	06 13 02 43 48 31 19 30  |1.0...U....CH1.0|
+ 00000270  17 06 03 55 04 0a 13 10	4c 69 6e 75 78 20 73 74  |...U....Linux st|
+ 00000280  72 6f 6e 67 53 77 61 6e	31 1b 30 19 06 03 55 04  |rongSwan1.0...U.|
+ 00000290  03 13 12 73 74 72 6f 6e	67 53 77 61 6e 20 52 6f  |...strongSwan Ro|
+ 000002a0  6f 74 20 43 41 82 01 00 
+
+ 499:d=2  hl=3 l= 178 cons: cont [ 3 ]		  
+ 502:d=3  hl=3 l= 175 cons: SEQUENCE		  
+ 505:d=4  hl=2 l=  18 cons: SEQUENCE		  
+ 507:d=5  hl=2 l=	3 prim: OBJECT			  :X509v3 Basic Constraints
+ 512:d=5  hl=2 l=	1 prim: BOOLEAN 		  :255
+ 515:d=5  hl=2 l=	8 prim: OCTET STRING	  
+	 0000 - 30 06 01 01 ff 02 01 01-						  0.......
+ 525:d=4  hl=2 l=  11 cons: SEQUENCE		  
+ 527:d=5  hl=2 l=	3 prim: OBJECT			  :X509v3 Key Usage
+ 532:d=5  hl=2 l=	4 prim: OCTET STRING	  
+	 0000 - 03 02 01 06 									  ....
+ 538:d=4  hl=2 l=  29 cons: SEQUENCE		  
+ 540:d=5  hl=2 l=	3 prim: OBJECT			  :X509v3 Subject Key Identifier
+ 545:d=5  hl=2 l=  22 prim: OCTET STRING	  
+	 0000 - 04 14 5d a7 dd 70 06 51-32 7e e7 b6 6d b3 b5 e5   ..]..p.Q2~..m...
+	 0010 - e0 60 ea 2e 4d ef								  .`..M.
+ 569:d=4  hl=2 l= 109 cons: SEQUENCE		  
+ 571:d=5  hl=2 l=	3 prim: OBJECT			  :X509v3 Authority Key Identifier
+ 576:d=5  hl=2 l= 102 prim: OCTET STRING	  
+	 0000 - 30 64 80 14 5d a7 dd 70-06 51 32 7e e7 b6 6d b3   0d..]..p.Q2~..m.
+	 0010 - b5 e5 e0 60 ea 2e 4d ef-a1 49 a4 47 30 45 31 0b   ...`..M..I.G0E1.
+	 0020 - 30 09 06 03 55 04 06 13-02 43 48 31 19 30 17 06   0...U....CH1.0..
+	 0030 - 03 55 04 0a 13 10 4c 69-6e 75 78 20 73 74 72 6f   .U....Linux stro
+	 0040 - 6e 67 53 77 61 6e 31 1b-30 19 06 03 55 04 03 13   ngSwan1.0...U...
+	 0050 - 12 73 74 72 6f 6e 67 53-77 61 6e 20 52 6f 6f 74   .strongSwan Root
+	 0060 - 20 43 41 82 01 00								   CA...
+
+ */
+bool certX509::parseBasicConstraintsExt(X509_EXTENSION *ext)
+{
+	u32_t flags = 0;
+	u8_t pathlen = 0;
+	BASIC_CONSTRAINTS *constraints;
+
+	constraints = (BASIC_CONSTRAINTS*)X509V3_EXT_d2i(ext);
+	if (constraints) {
+		if (constraints->ca) {
+			flags |= X509_CA;
+		}
+		if (constraints->pathlen) {
+
+			pathlen = ASN1_INTEGER_get(constraints->pathlen);
+			pathlen = (pathlen >= 0 && pathlen < 128) ? pathlen : X509_NO_CONSTRAINT;
+		}
+		BASIC_CONSTRAINTS_free(constraints);
+		return true;
+	}
+	return false;
+}
+
+/**
+ * parse key usage
+  00000200  xx xx xx xx xx xx xx xx xx xx xx xx xx 30 0b 06  |.....0.......0..|
+  00000210  03 55 1d 0f 04 04 03 02	01 06 xx xx xx xx xx xx  |.U........0...U.|
+  OBJ_key_usage="\x55\x1D\x0F"
+  字节串 OCTET STRING
+  标识符为：0x04
+  字节串在Contents中按照字节串的值的原始顺序，使用0或多个字节，来表示字节串的值。
+# define X509v3_KU_KEY_CERT_SIGN         0x0004
+# define X509v3_KU_CRL_SIGN              0x0002
+# define X509v3_KU_ENCIPHER_ONLY         0x0001
+
+ */
+bool certX509::parseKeyUsageExt(X509_EXTENSION *ext)
+{
+	ASN1_BIT_STRING *usage = NULL;
+
+	usage = (ASN1_BIT_STRING *)X509V3_EXT_d2i(ext);
+	if (usage){
+		if (usage->length > 0){
+			int flags = usage->data[0];
+			
+			if (usage->length > 1){
+				flags |= usage->data[1] << 8;
+			}
+			if (flags & X509v3_KU_CRL_SIGN){
+				this->mFlags |= X509_CRL_SIGN;
+				mxLogFmt(LOG_DEBUG,"X509v3 Key Usage:CRL Sign\n");
+			}
+			if (flags & X509v3_KU_KEY_CERT_SIGN){
+				/* we use the caBasicContraint, MUST be set */
+				mxLogFmt(LOG_DEBUG,"X509v3 Key Usage:Certificate Sign\n");
+			}
+		}
+		ASN1_BIT_STRING_free(usage);
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Parse ExtendedKeyUsage
+ */
+bool certX509::parseExtKeyUsageExt(X509_EXTENSION *ext)
+{
+	EXTENDED_KEY_USAGE *usage = NULL;
+	int i;
+
+	usage = (EXTENDED_KEY_USAGE *)X509V3_EXT_d2i(ext);
+	if (usage)
+	{
+		for (i = 0; i < sk_ASN1_OBJECT_num(usage); i++)
+		{
+			switch (OBJ_obj2nid(sk_ASN1_OBJECT_value(usage, i)))
+			{
+				case NID_server_auth:
+					this->mFlags |= X509_SERVER_AUTH;
+					break;
+				case NID_client_auth:
+					this->mFlags |= X509_CLIENT_AUTH;
+					break;
+				case NID_OCSP_sign:
+					this->mFlags |= X509_OCSP_SIGNER;
+					break;
+				default:
+					break;
+			}
+		}
+		sk_ASN1_OBJECT_pop_free(usage, ASN1_OBJECT_free);
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Parse authorityKeyIdentifier extension
+	 struct AUTHORITY_KEYID_st {
+	    ASN1_OCTET_STRING *keyid;
+	    GENERAL_NAMES *issuer;
+	    ASN1_INTEGER *serial;
+	};
+ */
+bool certX509::parseAuthKeyIdentifierExt(X509_EXTENSION *ext)
+{
+	AUTHORITY_KEYID *keyid;
+
+	keyid = (AUTHORITY_KEYID*)X509V3_EXT_d2i(ext);
+	if (keyid)
+	{
+		chunk_t authKid;
+		authKid = chunk_create(ASN1_STRING_data(keyid->keyid), ASN1_STRING_length(keyid->keyid));
+		mxLogFmt(LOG_DEBUG,"len:%d\n",ASN1_STRING_length(keyid->keyid));
+		AUTHORITY_KEYID_free(keyid);
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Parse subjectKeyIdentifier extension
+ */
+bool certX509::parseSubjectKeyIdentifierExt(X509_EXTENSION *ext)
+{
+	ASN1_STRING *asn1 = X509_EXTENSION_get_data(ext);
+	chunk_t subjetKid;
+	subjetKid = chunk_create(ASN1_STRING_data(asn1), ASN1_STRING_length(asn1));
+
+
+	return true;
+}
+
 

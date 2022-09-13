@@ -25,8 +25,14 @@ public:
 	EVP_PKEY* getCertPubKey2(void);
 	u32_t parseCertExtensions(void);
 private:
+	bool parseBasicConstraintsExt(X509_EXTENSION *ext);
+	bool parseKeyUsageExt(X509_EXTENSION *ext);
+	bool parseExtKeyUsageExt(X509_EXTENSION *ext);
+	bool parseAuthKeyIdentifierExt(X509_EXTENSION *ext);
+	bool parseSubjectKeyIdentifierExt(X509_EXTENSION *ext);
 	X509 *mpX509;
 	chunk_t mDerEncoding;   /* DER encoded certificate */
+	u32_t  mFlags;
 };
 
 
