@@ -1,12 +1,10 @@
 #include <stdio.h>
 #include "mxLog.h"
 #include "certX509.h"
+#include "credMgr.h"
 
 
-
-
-
-int main(int argc, char* argv[])
+void test_certX509(void)
 {
 	certX509 *cert = new certX509();
 	mxLogInit2(MXLOG_STDIO, "Test");
@@ -33,6 +31,20 @@ int main(int argc, char* argv[])
 	cert->getCertIssuer();
 	cert->showCertSubject();
 	cert->parseCertExtensions();
+
+}
+
+
+void test_credMgr(void)
+{
+	credMgr* cred = new credMgr();
+	cred->loadCerts();
+}
+
+int main(int argc, char* argv[])
+{
+	//test_certX509();
+	test_credMgr();
     return 0;
 }
 
