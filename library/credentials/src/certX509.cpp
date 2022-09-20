@@ -44,6 +44,29 @@ u32_t certX509::loadX509CertFromPEM(s8_t *filename)
 	
 	return STATUS_SUCCESS;
 }
+
+u32_t certX509::loadX509CertFromDER(s8_t *filename)
+{
+
+	X509* cert = X509_new();
+	if (cert == NULL) {
+		return STATUS_FAILED;
+	}
+
+	BIO* bio_cert = BIO_new_file(filename,"rb");
+	
+	if (bio_cert == NULL) {
+		return STATUS_FAILED;
+	}
+	cert = d2i_X509_bio(bio_cert, NULL);
+
+	mpX509 = cert;
+	BIO_free(bio_cert);
+	
+	return STATUS_SUCCESS;
+}
+
+
 /*
 The letters i and d in i2d_TYPE stand for "internal" (that is, an internal C structure) 
 and "DER" respectively.  So i2d_TYPE converts from internal to DER.
@@ -479,4 +502,70 @@ bool certX509::parseSubjectKeyIdentifierExt(X509_EXTENSION *ext)
 	return true;
 }
 
+/*
+ASN1_BIT_STRING *pubKey2 = X509_get0_pubkey_bitstr(certificateX509);
+X509_get0_pubkey_bitstr(mpX509); 再做摘要
+EVP_KEY *pubkey = X509_get_pubkey(mpX509);
+*/
+u32_t certX509::getFingerprint(u32_t type, chunk_t& fp)
+{
+
+	
+	switch (type) {
+		case KEYID_PUBKEY_INFO_SHA1:
+			calculatePublicKeyInfoHash(NULL,fp);
+			break;
+		case KEYID_PUBKEY_SHA1:
+			break;
+		default:
+			return STATUS_FAILED;
+	}
+	return STATUS_SUCCESS;
+}
+
+/*
+205:d=2  hl=4 l= 290 cons: SEQUENCE 		 
+209:d=3  hl=2 l=  13 cons: SEQUENCE 		 
+211:d=4  hl=2 l=   9 prim: OBJECT			 :rsaEncryption
+222:d=4  hl=2 l=   0 prim: NULL 			 
+224:d=3  hl=4 l= 271 prim: BIT STRING		 
+	0000 - 00 30 82 01 0a 02 82 01-01 00 bf f2 5f 62 ea 3d	 .0.........._b.=
+	0010 - 56 6e 58 b3 c8 7a 49 ca-f3 ac 61 cf a9 63 77 73	 VnX..zI...a..cws
+	0020 - 4d 84 2d b3 f8 fd 6e a0-23 f7 b0 13 2e 66 26 50	 M.-...n.#....f&P
+	0030 - 12 31 73 86 72 9c 6d 7c-42 7a 8d 9f 16 7b e1 38	 .1s.r.m|Bz...{.8
+	0040 - e8 eb ae 2b 12 b9 59 33-ba ef 36 a3 15 c3 dd f2	 ...+..Y3..6.....
+	0050 - 24 ce e4 bb 9b d5 78 13-5d 04 67 38 26 29 62 1f	 $.....x.].g8&)b.
+	0060 - f9 6b 8d 45 f6 e0 02 e5-08 36 62 dc e1 81 80 5c	 .k.E.....6b....\
+	0070 - 14 0b 3f 2c e9 3f 83 ae-e3 c8 61 cf f6 10 a3 9f	 ..?,.?....a.....
+	0080 - 01 89 cb 3a 3c 7c b9 bf-7e 2a 09 54 4e 21 70 ef	 ...:<|..~*.TN!p.
+	0090 - aa 18 fd d4 ff 20 fa 94-be 17 6d 7f ec ff 82 1f	 ..... ....m.....
+	00a0 - 68 d1 71 52 04 1d 9b 46-f0 cf cf c1 e4 cf 43 de	 h.qR...F......C.
+	00b0 - 5d 3f 3a 58 77 63 af e9-26 7f 53 b1 16 99 b3 26	 ]?:Xwc..&.S....&
+	00c0 - 4f c5 5c 51 89 f5 68 28-71 16 6c b9 83 07 95 05	 O.\Q..h(q.l.....
+	00d0 - 69 64 1f a3 0f fb 50 de-13 4f ed 2f 97 3c ef 1a	 id....P..O./.<..
+	00e0 - 39 28 27 86 2b c4 dd aa-97 bb b0 14 42 e2 93 c4	 9('.+.......B...
+	00f0 - 10 70 d0 72 24 d4 be 47-ae 27 53 eb 2b ed 4b c1	 .p.r$..G.'S.+.K.
+	0100 - da 91 c6 8e c7 80 c4 62-0f 0f 02 03 01 00 01 	 .......b.......
+
+*/
+u32_t certX509::calculatePublicKeyInfoHash(const s8_t *name, chunk_t& fp)
+{
+	unsigned char md[EVP_MAX_MD_SIZE];/* longest known is SHA512  64*/
+	u32_t len = 0;
+	const EVP_MD *fdig = NULL;
+	
+	if (name == NULL) {
+		fdig = EVP_sha1();
+	} else {
+		fdig = EVP_get_digestbyname(name);
+	}
+	if (fdig== NULL) {
+		return STATUS_FAILED;
+	}
+	//X509_pubkey_digest(mpX509,fdig, md, &len); 仅包含公钥信息，不包含算法信息，BIT STRING去除00之后的数据
+	fp.ptr = md;
+	fp.len = len;
+	
+	return STATUS_SUCCESS;
+}
 

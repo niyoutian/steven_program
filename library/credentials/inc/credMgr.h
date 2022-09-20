@@ -84,13 +84,14 @@ enum auth_rule_t {
 };
 
 
-
+//pkcs1_public_key_load  pkcs1_public_key_load
 class credMgr
 {
 public:
 	credMgr();
 	~credMgr();
 	void loadCerts(void);
+	certMgr* getCertMgr(void);
 private:
 	u32_t loadCertDir(s8_t *path, u32_t certType, u32_t certFlag);
 	u32_t loadCertByType(s8_t *file, u32_t certType, u32_t certFlag);

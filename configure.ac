@@ -52,6 +52,8 @@ AC_CONFIG_FILES([Makefile
                  library/xfrm/src/Makefile
 		 library/credentials/Makefile
 		 library/credentials/src/Makefile
+                 library/encoder/Makefile
+                 library/encoder/src/Makefile
 		 app/Makefile
 		 app/test_log/Makefile
 		 app/test_log/src/Makefile

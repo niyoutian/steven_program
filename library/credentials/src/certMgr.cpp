@@ -1,3 +1,11 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+
+
 #include "certMgr.h"
 
 
@@ -19,6 +27,70 @@ certMgr::~certMgr()
  */
 certX509* certMgr::loadX509CaCert(s8_t *filename)
 {
+	u32_t status = 0;
+	u32_t encoding = 0;
+	status = getCertEncoding(filename, encoding);
+	if (status != STATUS_SUCCESS) {
+		return NULL;
+	}
+	certX509 *pCert = new certX509();
+
+
+	if (encoding == CERT_ENCODING_PEM) {
+		pCert->loadX509CertFromPEM(filename);
+	} else if (encoding == CERT_ENCODING_DER) {
+		pCert->loadX509CertFromPEM(filename);
+	} else {
+		return NULL;
+	}
+	mCertList.push_back(pCert);
+
+	return pCert;
+}
+
+/**
+ * Load a AA certificate from disk
+ */
+certX509* certMgr::loadX509AaCert(s8_t *filename)
+{
+	certX509 *pCert = new certX509();
+
+	mCertList.push_back(pCert);
+
+	return pCert;
+}
+
+
+/**
+ * Load a EE certificate from disk
+ */
+certX509* certMgr::loadX509Cert(s8_t *filename)
+{
+	u32_t status = 0;
+	u32_t encoding = 0;
+	status = getCertEncoding(filename, encoding);
+	if (status != STATUS_SUCCESS) {
+		return NULL;
+	}
+	certX509 *pCert = new certX509();
+
+
+	if (encoding == CERT_ENCODING_PEM) {
+		pCert->loadX509CertFromPEM(filename);
+	} else if (encoding == CERT_ENCODING_DER) {
+		pCert->loadX509CertFromPEM(filename);
+	}
+	mCertList.push_back(pCert);
+
+	return pCert;
+
+}
+
+/**
+ * Load a CRL certificate from disk
+ */
+certX509* certMgr::loadX509CrlCert(s8_t *filename)
+{
 	certX509 *pCert = new certX509();
 
 	mCertList.push_back(pCert);
@@ -27,9 +99,9 @@ certX509* certMgr::loadX509CaCert(s8_t *filename)
 }
 
 /**
- * Load a EE certificate from disk
+ * Load a attribute certificate from disk
  */
-certX509* certMgr::loadX509Cert(s8_t *filename)
+certX509* certMgr::loadX509AttCert(s8_t *filename)
 {
 	certX509 *pCert = new certX509();
 
@@ -38,10 +110,58 @@ certX509* certMgr::loadX509Cert(s8_t *filename)
 	return pCert;
 }
 
+
 certX509* certMgr::loadX509CertFromPEM(s8_t *filename)
 {
 	//certX509 * pCert = 
 
 	return NULL;
+}
+
+/*
+.DER .CER，文件是二进制格式，只保存证书，不保存私钥。
+.PEM，一般是文本格式，可保存证书，可保存私钥。
+
+*/
+u32_t certMgr::getCertEncoding(s8_t *filename,u32_t& encoding)
+{
+	s32_t fd = 0;
+	struct stat sb;
+	
+	fd = open(filename, O_RDONLY);
+	if (fd == -1) {
+		return STATUS_FAILED;
+	}
+
+	if (fstat(fd, &sb) == -1){
+		return STATUS_FAILED;
+	}
+
+	s8_t *buf = NULL;
+	s32_t len = 0, total = 0;
+	buf = (s8_t *)malloc(sb.st_size);
+	if (buf== NULL) {
+		return STATUS_FAILED;
+	}
+	while (true) {
+		len = read(fd, buf + total, sb.st_size - total);
+		if (len < 0) {
+			close(fd);
+			free(buf);
+			return STATUS_FAILED;
+		}
+		if (len == 0) {
+			break;
+		}
+		total += len;
+	}
+
+	if (sb.st_size >= 10 && strcmp(buf,"-----BEGIN") == 0) {
+		encoding = CERT_ENCODING_PEM;
+	}
+
+	close(fd);
+	free(buf);
+	return STATUS_SUCCESS;
 }
 

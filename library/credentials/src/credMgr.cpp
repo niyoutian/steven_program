@@ -44,6 +44,12 @@ void credMgr::loadCerts(void)
 	loadCertDir(CRL_DIR, CERT_X509_CRL, 0);
 }
 
+certMgr* credMgr::getCertMgr(void)
+{
+	return mpCertMgr;
+}
+
+
 /**
  * load trusted certificates from a directory
  */
@@ -113,17 +119,17 @@ u32_t credMgr::loadCertByType(s8_t *file, u32_t certType, u32_t certFlag)
 				mpCertMgr->loadX509CaCert(file);
 			}
 			else if (certFlag & X509_AA) {
-				//load_x509_aa(this, file, creds);
+				mpCertMgr->loadX509AaCert(file);
 			}
 			else {
 				mpCertMgr->loadX509Cert(file);
 			}
 			break;
 		case CERT_X509_CRL:
-			//load_x509_crl(this, file, creds);
+			mpCertMgr->loadX509CrlCert(file);
 			break;
 		case CERT_X509_AC:
-			//load_x509_ac(this, file, creds);
+			mpCertMgr->loadX509AttCert(file);
 			break;
 		default:
 			break;
