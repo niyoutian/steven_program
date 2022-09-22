@@ -5,6 +5,59 @@
 #include <openssl/x509v3.h>
 #include "mxLog.h"
 #include "certX509.h"
+#include "asn1Parser.h"
+
+
+
+#define X509_OBJ_TBS_CERTIFICATE				 1
+#define X509_OBJ_VERSION						 3
+#define X509_OBJ_SERIAL_NUMBER					 4
+#define X509_OBJ_SIG_ALG						 5
+#define X509_OBJ_ISSUER							 6
+#define X509_OBJ_NOT_BEFORE						 8
+#define X509_OBJ_NOT_AFTER						 9
+#define X509_OBJ_SUBJECT						10
+#define X509_OBJ_SUBJECT_PUBLIC_KEY_INFO		11
+#define X509_OBJ_OPTIONAL_EXTENSIONS			16
+#define X509_OBJ_EXTN_ID						19
+#define X509_OBJ_CRITICAL						20
+#define X509_OBJ_EXTN_VALUE						21
+#define X509_OBJ_ALGORITHM						24
+#define X509_OBJ_SIGNATURE						25
+
+
+/**
+ * ASN.1 definition of an X.509v3 x509_cert
+ */
+static const asn1Object_t certObjects[] = {
+	{ 0, "x509",					ASN1_PARSER_SEQUENCE,		ASN1_OBJ			}, /*  0 */
+	{ 1,   "tbsCertificate",		ASN1_PARSER_SEQUENCE,		ASN1_OBJ			}, /*  1 */
+	{ 2,     "DEFAULT v1",			ASN1_PARSER_CONTEXT_C_0,	ASN1_DEF			}, /*  2 */
+	{ 3,       "version",			ASN1_PARSER_INTEGER,		ASN1_BODY			}, /*  3 */
+	{ 2,     "serialNumber",		ASN1_PARSER_INTEGER,		ASN1_BODY			}, /*  4 */
+	{ 2,     "signature",			ASN1_PARSER_EOC,			ASN1_RAW			}, /*  5 */
+	{ 2,     "issuer",				ASN1_PARSER_SEQUENCE,		ASN1_OBJ			}, /*  6 */
+	{ 2,     "validity",			ASN1_PARSER_SEQUENCE,		ASN1_NONE			}, /*  7 */
+	{ 3,       "notBefore",			ASN1_PARSER_EOC,			ASN1_RAW			}, /*  8 */
+	{ 3,       "notAfter",			ASN1_PARSER_EOC,			ASN1_RAW			}, /*  9 */
+	{ 2,     "subject",				ASN1_PARSER_SEQUENCE,		ASN1_OBJ			}, /* 10 */
+	{ 2,     "subjectPublicKeyInfo",ASN1_PARSER_SEQUENCE,		ASN1_RAW			}, /* 11 */
+	{ 2,     "issuerUniqueID",		ASN1_PARSER_CONTEXT_C_1,	ASN1_OPT			}, /* 12 */
+	{ 2,     "end opt",				ASN1_PARSER_EOC,			ASN1_END			}, /* 13 */
+	{ 2,     "subjectUniqueID",		ASN1_PARSER_CONTEXT_C_2,	ASN1_OPT			}, /* 14 */
+	{ 2,     "end opt",				ASN1_PARSER_EOC,			ASN1_END			}, /* 15 */
+	{ 2,     "optional extensions",	ASN1_PARSER_CONTEXT_C_3,	ASN1_OPT			}, /* 16 */
+	{ 3,       "extensions",		ASN1_PARSER_SEQUENCE,		ASN1_LOOP			}, /* 17 */
+	{ 4,         "extension",		ASN1_PARSER_SEQUENCE,		ASN1_NONE			}, /* 18 */
+	{ 5,           "extnID",		ASN1_PARSER_OID,			ASN1_BODY			}, /* 19 */
+	{ 5,           "critical",		ASN1_PARSER_BOOLEAN,		ASN1_DEF|ASN1_BODY	}, /* 20 */
+	{ 5,           "extnValue",		ASN1_PARSER_OCTET_STRING,	ASN1_BODY			}, /* 21 */
+	{ 3,       "end loop",			ASN1_PARSER_EOC,			ASN1_END			}, /* 22 */
+	{ 2,     "end opt",				ASN1_PARSER_EOC,			ASN1_END			}, /* 23 */
+	{ 1,   "signatureAlgorithm",	ASN1_PARSER_EOC,			ASN1_RAW			}, /* 24 */
+	{ 1,   "signatureValue",		ASN1_PARSER_BIT_STRING,	    ASN1_BODY			}, /* 25 */
+	{ 0, "exit",					ASN1_PARSER_EOC,			ASN1_EXIT			}
+};
 
 
 
@@ -41,7 +94,7 @@ u32_t certX509::loadX509CertFromPEM(s8_t *filename)
 
 	mpX509 = cert;
 	BIO_free(bio_cert);
-	
+	transformX509ToDER();
 	return STATUS_SUCCESS;
 }
 
@@ -547,24 +600,33 @@ u32_t certX509::getFingerprint(u32_t type, chunk_t& fp)
 	00f0 - 10 70 d0 72 24 d4 be 47-ae 27 53 eb 2b ed 4b c1	 .p.r$..G.'S.+.K.
 	0100 - da 91 c6 8e c7 80 c4 62-0f 0f 02 03 01 00 01 	 .......b.......
 
+X509_pubkey_digest(mpX509,fdig, md, &len); 仅包含公钥信息，不包含算法信息，BIT STRING去除00之后的数据
+
 */
 u32_t certX509::calculatePublicKeyInfoHash(const s8_t *name, chunk_t& fp)
 {
-	unsigned char md[EVP_MAX_MD_SIZE];/* longest known is SHA512  64*/
-	u32_t len = 0;
-	const EVP_MD *fdig = NULL;
-	
-	if (name == NULL) {
-		fdig = EVP_sha1();
-	} else {
-		fdig = EVP_get_digestbyname(name);
+	chunk_t object;
+	s32_t objectID;
+
+	asn1Parser *parser = new asn1Parser(certObjects, mDerEncoding);
+
+	while (parser->iterate(objectID, object)) {
+		printf("objectID=%d\n",objectID);
+		switch (objectID) {
+			case X509_OBJ_TBS_CERTIFICATE:
+			case X509_OBJ_VERSION:
+				printf("objectID =%d,%p,%d\n",objectID,object.ptr,object.len);
+				break;
+			case X509_OBJ_SUBJECT_PUBLIC_KEY_INFO:
+				printf("objectID2 =%d,%p,%d\n",objectID,object.ptr,object.len);
+				chunk_printf(object);
+				break;
+			default:
+				break;
+
+				
+		}
 	}
-	if (fdig== NULL) {
-		return STATUS_FAILED;
-	}
-	//X509_pubkey_digest(mpX509,fdig, md, &len); 仅包含公钥信息，不包含算法信息，BIT STRING去除00之后的数据
-	fp.ptr = md;
-	fp.len = len;
 	
 	return STATUS_SUCCESS;
 }

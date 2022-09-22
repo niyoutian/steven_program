@@ -1,5 +1,6 @@
 #ifndef __MXDEF_H__
 #define __MXDEF_H__
+#include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 
@@ -36,6 +37,16 @@ static inline chunk_t chunk_create(u8_t *ptr, size_t len)
  */
 #define chunk_alloc(bytes) ({size_t x = (bytes); chunk_create(x ? malloc(x) : NULL, x);})
 
+static inline void chunk_printf(chunk_t chunk)
+{
+	printf("chunk ptr:%p,len=%u",chunk.ptr,chunk.len);
+	for (u32_t i = 0; i < chunk.len; i++) {
+		if (i % 16 == 0) {
+			printf("\n");
+		}
+		printf("%02x ",*((u8_t *)chunk.ptr+i));
+	}
+}
 
 
 #endif
