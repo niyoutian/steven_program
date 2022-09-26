@@ -4,8 +4,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
-
-
+#include "mxLog.h"
 #include "certMgr.h"
 
 
@@ -19,7 +18,13 @@ certMgr::certMgr()
 
 certMgr::~certMgr()
 {
-	
+	certX509 *pCert = NULL;
+	while(!mCertList.empty()) {
+		pCert = mCertList.front();
+		mCertList.pop_front();
+		delete pCert;
+		pCert = NULL;
+	}
 }
 
 /**
@@ -39,12 +44,16 @@ certX509* certMgr::loadX509CaCert(s8_t *filename)
 	if (encoding == CERT_ENCODING_PEM) {
 		pCert->loadX509CertFromPEM(filename);
 	} else if (encoding == CERT_ENCODING_DER) {
-		pCert->loadX509CertFromPEM(filename);
+		pCert->loadX509CertFromDER(filename);
 	} else {
 		return NULL;
 	}
 	mCertList.push_back(pCert);
 
+	chunk_t chunk = pCert->getCertSubjectString();
+	mxLogFmt(LOG_DEBUG,"loaded certificate %s from %s\n",chunk.ptr, filename);
+	chunk_free(&chunk);
+	
 	return pCert;
 }
 
@@ -78,7 +87,7 @@ certX509* certMgr::loadX509Cert(s8_t *filename)
 	if (encoding == CERT_ENCODING_PEM) {
 		pCert->loadX509CertFromPEM(filename);
 	} else if (encoding == CERT_ENCODING_DER) {
-		pCert->loadX509CertFromPEM(filename);
+		pCert->loadX509CertFromDER(filename);
 	}
 	mCertList.push_back(pCert);
 
@@ -108,14 +117,6 @@ certX509* certMgr::loadX509AttCert(s8_t *filename)
 	mCertList.push_back(pCert);
 
 	return pCert;
-}
-
-
-certX509* certMgr::loadX509CertFromPEM(s8_t *filename)
-{
-	//certX509 * pCert = 
-
-	return NULL;
 }
 
 /*

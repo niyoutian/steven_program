@@ -91,7 +91,6 @@ u32_t credMgr::loadCertDir(s8_t *path, u32_t certType, u32_t certFlag)
 		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
 			continue;
 		}
-		printf("d_name:%s\n",entry->d_name);
 		len2 = snprintf(fullName+len, sizeof(fullName)-len, "%s", entry->d_name);
 		if (len2 < 0 || len2 >= sizeof(fullName)-len - 1) {
 			mxLogFmt(LOG_INFO,"path string '%s' too long\n",path);

@@ -46,14 +46,16 @@ void test_publicKey(void)
 	certX509 *cert = new certX509();
 	cert->loadX509CertFromPEM("/usr/local/etc/ipsec.d/cacerts/strongswanCert.pem");
 	chunk_t hash={NULL,0};
-	cert->getFingerprint(KEYID_PUBKEY_INFO_SHA1, hash);
+	cert->getFingerprint(KEYID_PUBKEY_SHA1, hash);
+	chunk_free(&hash);
 }
 
 
 int main(int argc, char* argv[])
 {
 	//test_certX509();
-	//test_credMgr();
+	test_credMgr();
+	//
 	test_publicKey();
     return 0;
 }

@@ -33,9 +33,20 @@ static inline chunk_t chunk_create(u8_t *ptr, size_t len)
 }
 
 /**
+ * Free contents of a chunk
+ */
+static inline void chunk_free(chunk_t *chunk)
+{
+	free(chunk->ptr);
+	chunk->ptr = NULL;
+	chunk->len = 0;
+}
+
+
+/**
  * Allocate a chunk on the heap
  */
-#define chunk_alloc(bytes) ({size_t x = (bytes); chunk_create(x ? malloc(x) : NULL, x);})
+#define chunk_alloc(bytes) ({size_t x = (bytes); chunk_create(x ? (u8_t *)malloc(x) : NULL, x);})
 
 static inline void chunk_printf(chunk_t chunk)
 {

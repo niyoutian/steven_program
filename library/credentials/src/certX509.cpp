@@ -66,11 +66,21 @@ certX509::certX509()
 	mpX509 = NULL;
 	mDerEncoding.len = 0;
 	mDerEncoding.ptr = NULL;
+	mCertType = CERT_ANY;
 }
 
 
 certX509::~certX509()
 {
+	if (mDerEncoding.ptr != NULL) {
+		free(mDerEncoding.ptr);
+		mDerEncoding.ptr = NULL;
+	}
+
+	if (mpX509 != NULL) {
+		X509_free(mpX509);
+		mpX509 = NULL;
+	}
 }
 
 /*
@@ -115,7 +125,7 @@ u32_t certX509::loadX509CertFromDER(s8_t *filename)
 
 	mpX509 = cert;
 	BIO_free(bio_cert);
-	
+	transformX509ToDER();
 	return STATUS_SUCCESS;
 }
 
@@ -154,7 +164,7 @@ chunk_t certX509::getSerialNum(void)
 
 u32_t certX509::getCertType(void)
 {
-	return CERT_X509;
+	return mCertType;
 }
 
 /*
@@ -293,13 +303,70 @@ void certX509::showCertSubject(void)
 }
 
 
-chunk_t certX509::getCertSubject(void)
+chunk_t certX509::getCertSubjectDER(void)
 {
 	X509_NAME *pSubjectName = X509_get_subject_name(mpX509);
 	chunk_t der={NULL,0};
 
 	X509_NAME_get0_der(pSubjectName, (const u8_t **)&der.ptr, (size_t *)&der.len);
 	return der;
+}
+
+/*
+返回值 chunk_t由调用者释放
+*/
+chunk_t certX509::getCertSubjectString(void)
+{
+	X509_NAME *pSubjectName = X509_get_subject_name(mpX509);
+	s32_t entriesNum  = X509_NAME_entry_count(pSubjectName);
+	X509_NAME_ENTRY *name_entry = NULL;
+	ASN1_STRING *entry_value = NULL;
+	s32_t Nid = 0;
+	s8_t str[128]={0};
+	s32_t str_len = 0;
+	//循环读取个条目信息
+	for(s32_t i = 0; i < entriesNum; i++) {
+		name_entry = X509_NAME_get_entry(pSubjectName, i);
+		Nid = OBJ_obj2nid(X509_NAME_ENTRY_get_object(name_entry));
+		entry_value = X509_NAME_ENTRY_get_data(name_entry);
+		switch(Nid) {
+			case NID_countryName://国家C
+				str_len += snprintf(str+str_len, sizeof(str)-str_len,"C = %s, ",entry_value->data);
+				break;
+			case NID_stateOrProvinceName://省ST
+				printf("issuer 's ST:%s\n",entry_value->data);
+				str_len += snprintf(str+str_len, sizeof(str)-str_len,"ST = %s, ",entry_value->data);
+				break;
+			case NID_localityName://地区L
+				str_len += snprintf(str+str_len, sizeof(str)-str_len,"L = %s, ",entry_value->data);
+				break;
+			case NID_organizationName://组织O
+				str_len += snprintf(str+str_len, sizeof(str)-str_len,"O = %s, ",entry_value->data);
+				break;
+			case NID_organizationalUnitName://单位OU
+				str_len += snprintf(str+str_len, sizeof(str)-str_len,"OU = %s, ",entry_value->data);
+				break;
+			case NID_commonName://通用名CN
+				str_len += snprintf(str+str_len, sizeof(str)-str_len,"CN = %s, ",entry_value->data);
+				break;						
+			case NID_pkcs9_emailAddress://Mail
+				str_len += snprintf(str+str_len, sizeof(str)-str_len,"M = %s, ",entry_value->data);
+				break;
+			default:
+				break;
+		}
+	}
+	chunk_t chunk = {NULL, 0};
+	
+	if (str_len > 2) {
+		str_len = str_len - 2; //remove ", "
+		str[str_len] = 0;
+		chunk.ptr = (u8_t*)malloc(str_len+1);
+		strncpy((s8_t *)chunk.ptr, str,str_len);
+		chunk.len = str_len;
+	}
+	
+	return chunk;
 }
 
 
@@ -569,6 +636,7 @@ u32_t certX509::getFingerprint(u32_t type, chunk_t& fp)
 			calculatePublicKeyInfoHash(NULL,fp);
 			break;
 		case KEYID_PUBKEY_SHA1:
+			calculatePublicKeyHash(NULL,fp);
 			break;
 		default:
 			return STATUS_FAILED;
@@ -600,7 +668,6 @@ u32_t certX509::getFingerprint(u32_t type, chunk_t& fp)
 	00f0 - 10 70 d0 72 24 d4 be 47-ae 27 53 eb 2b ed 4b c1	 .p.r$..G.'S.+.K.
 	0100 - da 91 c6 8e c7 80 c4 62-0f 0f 02 03 01 00 01 	 .......b.......
 
-X509_pubkey_digest(mpX509,fdig, md, &len); 仅包含公钥信息，不包含算法信息，BIT STRING去除00之后的数据
 
 */
 u32_t certX509::calculatePublicKeyInfoHash(const s8_t *name, chunk_t& fp)
@@ -611,7 +678,7 @@ u32_t certX509::calculatePublicKeyInfoHash(const s8_t *name, chunk_t& fp)
 	asn1Parser *parser = new asn1Parser(certObjects, mDerEncoding);
 
 	while (parser->iterate(objectID, object)) {
-		printf("objectID=%d\n",objectID);
+#if 0
 		switch (objectID) {
 			case X509_OBJ_TBS_CERTIFICATE:
 			case X509_OBJ_VERSION:
@@ -623,11 +690,83 @@ u32_t certX509::calculatePublicKeyInfoHash(const s8_t *name, chunk_t& fp)
 				break;
 			default:
 				break;
-
-				
 		}
+#else
+		if (objectID == X509_OBJ_SUBJECT_PUBLIC_KEY_INFO) {
+			printf("objectID2 =%d,%p,%d\n",objectID,object.ptr,object.len);
+			chunk_printf(object);
+			break;
+		}
+#endif
 	}
+	const EVP_MD *digest = NULL;
+	unsigned char md[EVP_MAX_MD_SIZE] = {0};
+	unsigned int n = 0;
+	if (name == NULL) {
+		digest = EVP_sha1();
+	} else {
+		digest = EVP_get_digestbyname(name);
+	}
+	EVP_Digest(object.ptr, object.len, md, &n, digest, NULL);
+	fp = chunk_alloc(n); 
+	memcpy(fp.ptr, md, n);
+
+	delete parser;
 	
+	return STATUS_SUCCESS;
+}
+/*
+224:d=3  hl=4 l= 271 prim: BIT STRING		 
+	0000 - 00 30 82 01 0a 02 82 01-01 00 bf f2 5f 62 ea 3d	 .0.........._b.=
+	0010 - 56 6e 58 b3 c8 7a 49 ca-f3 ac 61 cf a9 63 77 73	 VnX..zI...a..cws
+	0020 - 4d 84 2d b3 f8 fd 6e a0-23 f7 b0 13 2e 66 26 50	 M.-...n.#....f&P
+	0030 - 12 31 73 86 72 9c 6d 7c-42 7a 8d 9f 16 7b e1 38	 .1s.r.m|Bz...{.8
+	0040 - e8 eb ae 2b 12 b9 59 33-ba ef 36 a3 15 c3 dd f2	 ...+..Y3..6.....
+	0050 - 24 ce e4 bb 9b d5 78 13-5d 04 67 38 26 29 62 1f	 $.....x.].g8&)b.
+	0060 - f9 6b 8d 45 f6 e0 02 e5-08 36 62 dc e1 81 80 5c	 .k.E.....6b....\
+	0070 - 14 0b 3f 2c e9 3f 83 ae-e3 c8 61 cf f6 10 a3 9f	 ..?,.?....a.....
+	0080 - 01 89 cb 3a 3c 7c b9 bf-7e 2a 09 54 4e 21 70 ef	 ...:<|..~*.TN!p.
+	0090 - aa 18 fd d4 ff 20 fa 94-be 17 6d 7f ec ff 82 1f	 ..... ....m.....
+	00a0 - 68 d1 71 52 04 1d 9b 46-f0 cf cf c1 e4 cf 43 de	 h.qR...F......C.
+	00b0 - 5d 3f 3a 58 77 63 af e9-26 7f 53 b1 16 99 b3 26	 ]?:Xwc..&.S....&
+	00c0 - 4f c5 5c 51 89 f5 68 28-71 16 6c b9 83 07 95 05	 O.\Q..h(q.l.....
+	00d0 - 69 64 1f a3 0f fb 50 de-13 4f ed 2f 97 3c ef 1a	 id....P..O./.<..
+	00e0 - 39 28 27 86 2b c4 dd aa-97 bb b0 14 42 e2 93 c4	 9('.+.......B...
+	00f0 - 10 70 d0 72 24 d4 be 47-ae 27 53 eb 2b ed 4b c1	 .p.r$..G.'S.+.K.
+	0100 - da 91 c6 8e c7 80 c4 62-0f 0f 02 03 01 00 01 	 .......b.......
+
+X509_pubkey_digest(mpX509,fdig, md, &len); 仅包含公钥信息，不包含算法信息，BIT STRING去除00之后的数据
+
+计算结果对应X509v3 Subject Key Identifier
+X509v3 extensions:
+	X509v3 Basic Constraints: critical
+		CA:TRUE, pathlen:1
+	X509v3 Key Usage: 
+		Certificate Sign, CRL Sign
+	X509v3 Subject Key Identifier: 
+		5D:A7:DD:70:06:51:32:7E:E7:B6:6D:B3:B5:E5:E0:60:EA:2E:4D:EF
+	X509v3 Authority Key Identifier: 
+		keyid:5D:A7:DD:70:06:51:32:7E:E7:B6:6D:B3:B5:E5:E0:60:EA:2E:4D:EF
+		DirName:/C=CH/O=Linux strongSwan/CN=strongSwan Root CA
+		serial:00
+
+*/
+u32_t certX509::calculatePublicKeyHash(const s8_t *name, chunk_t& fp)
+{
+	const EVP_MD *digest = NULL;
+	unsigned char md[EVP_MAX_MD_SIZE] = {0};
+	unsigned int len = 0;
+	if (name == NULL) {
+		digest = EVP_sha1();
+	} else {
+		digest = EVP_get_digestbyname(name);
+	}
+
+	X509_pubkey_digest(mpX509,digest, md, &len);
+	
+	fp = chunk_alloc(len); 
+	memcpy(fp.ptr, md, len);
+
 	return STATUS_SUCCESS;
 }
 

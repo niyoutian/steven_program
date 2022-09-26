@@ -12,6 +12,7 @@ typedef enum eKeyidType {
 	KEYID_PUBKEY_SHA1,
 } eKeyidType_t;
 
+#define EVP_MAX_MD_SIZE                 64/* longest known is SHA512 */
 
 class certX509 : public certInterface
 {
@@ -29,7 +30,8 @@ public:
 	const s8_t* getSignatureAlgorithmLN(void);
 	chunk_t getCertIssuer(void);
 	void showCertSubject(void);
-	chunk_t getCertSubject(void);
+	chunk_t getCertSubjectDER(void);
+	chunk_t getCertSubjectString(void);
 	X509_PUBKEY* getCertPubKey(void);
 	EVP_PKEY* getCertPubKey2(void);
 	u32_t parseCertExtensions(void);
@@ -42,8 +44,10 @@ private:
 	bool parseSubjectKeyIdentifierExt(X509_EXTENSION *ext);
 
 	u32_t calculatePublicKeyInfoHash(const s8_t *name, chunk_t& fp);
+	u32_t calculatePublicKeyHash(const s8_t *name, chunk_t& fp);
 	X509 *mpX509;
 	chunk_t mDerEncoding;   /* DER encoded certificate */
+	u32_t mCertType;
 	u32_t  mFlags;
 };
 
