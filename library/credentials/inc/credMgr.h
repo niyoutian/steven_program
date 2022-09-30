@@ -2,6 +2,7 @@
 #define __CRED_MGR_H__
 #include "mxDef.h"
 #include "certMgr.h"
+#include "privateKeyMgr.h"
 
 /* configuration directories and files */
 //#define CONFIG_DIR IPSEC_CONFDIR
@@ -92,12 +93,16 @@ public:
 	~credMgr();
 	static credMgr* getInstance(void);
 	void loadCerts(void);
+	void loadSecrets(void);
+	
 	certMgr* getCertMgr(void);
+	privateKeyMgr* getPrivateKeyMgr(void);
 private:
 	static credMgr* mpInstance;
 	u32_t loadCertDir(s8_t *path, u32_t certType, u32_t certFlag);
 	u32_t loadCertByType(s8_t *file, u32_t certType, u32_t certFlag);
 	certMgr *mpCertMgr;
+	privateKeyMgr *mpPrivateKeyMgr;
 };
 
 #endif

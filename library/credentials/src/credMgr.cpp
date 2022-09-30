@@ -15,6 +15,7 @@ credMgr* credMgr::mpInstance = NULL;
 credMgr::credMgr()
 {
 	mpCertMgr = new certMgr();
+	mpPrivateKeyMgr = new privateKeyMgr();
 }
 
 credMgr::~credMgr()
@@ -54,9 +55,20 @@ void credMgr::loadCerts(void)
 	loadCertDir(CRL_DIR, CERT_X509_CRL, 0);
 }
 
+void credMgr::loadSecrets(void)
+{
+	mxLogFmt(LOG_INFO,"loading secrets from '%s'\n",SECRETS_FILE);
+}
+
+
 certMgr* credMgr::getCertMgr(void)
 {
 	return mpCertMgr;
+}
+
+privateKeyMgr* credMgr::getPrivateKeyMgr(void)
+{
+	return mpPrivateKeyMgr;
 }
 
 
