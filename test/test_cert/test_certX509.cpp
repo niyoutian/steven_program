@@ -50,13 +50,33 @@ void test_publicKey(void)
 	chunk_free(&hash);
 }
 
+void test_certList(void)
+{
+	credMgr* cred = credMgr::getInstance();
+	cred->loadCerts();
+	
+	certMgr *certMgr = cred->getCertMgr();
+	certX509* cert = NULL;
+
+	list <certX509*> certList = certMgr->getCertList();
+	list <certX509*>::iterator it;
+	if (certList.empty()) {
+		return;
+	}
+	for(it = certList.begin(); it != certList.end(); it++) {
+		cert = *it;
+		cert->showCertSubject();
+	}
+	
+}
+
 
 int main(int argc, char* argv[])
 {
 	//test_certX509();
-	test_credMgr();
-	//
-	test_publicKey();
+	//test_credMgr();
+	//test_publicKey();
+	test_certList();
     return 0;
 }
 

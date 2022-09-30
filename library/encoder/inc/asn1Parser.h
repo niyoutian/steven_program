@@ -96,6 +96,7 @@ public:
 	~asn1Parser();
 	bool iterate(s32_t& objectID, chunk_t& object);
 	void setFlags(bool implicit, bool privated);
+	bool isAsn1Encode(chunk_t blob);
 private:
 	u32_t asn1Length(chunk_t *blob);
 	

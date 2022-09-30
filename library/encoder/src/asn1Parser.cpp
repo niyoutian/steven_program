@@ -246,3 +246,34 @@ void asn1Parser::setFlags(bool implicit, bool privated)
 	mPrivate = privated;
 }
 
+bool asn1Parser::isAsn1Encode(chunk_t blob)
+{
+	if (!blob.len || !blob.ptr){
+		return false;
+	}
+
+	u8_t tag = 0;
+	tag = *blob.ptr;
+	if (tag != ASN1_PARSER_SEQUENCE && tag != ASN1_PARSER_SET && tag != ASN1_PARSER_OCTET_STRING) {
+		return false;
+	}
+
+	u32_t len = 0;
+	len = asn1Length(&blob);
+	if (len == ASN1_INVALID_LENGTH) {
+		return false;
+	}
+	/* exact match */
+	if (len == blob.len){
+		return true;
+	}
+
+	/* some websites append a surplus newline character to the blob */
+	if (len + 1 == blob.len && *(blob.ptr + len) == '\n'){
+		return true;
+	}
+
+	mxLogFmt(LOG_DEBUG,"file size does not match ASN.1 coded length\n");
+	return false;
+}
+

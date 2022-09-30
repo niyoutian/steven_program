@@ -25,6 +25,8 @@ public:
 	u32_t transformDERtoX509(void);
 	chunk_t getSerialNum(void);
 	u32_t getCertType(void);
+	u32_t getCertFlag(void);
+	void setCertFlag(u32_t flag);
 	s32_t getCertVersion(void);
 	chunk_t getSignatureAlgorithmDER(void);
 	const s8_t* getSignatureAlgorithmLN(void);
@@ -45,10 +47,15 @@ private:
 
 	u32_t calculatePublicKeyInfoHash(const s8_t *name, chunk_t& fp);
 	u32_t calculatePublicKeyHash(const s8_t *name, chunk_t& fp);
+	
 	X509 *mpX509;
 	chunk_t mDerEncoding;   /* DER encoded certificate */
-	u32_t mCertType;
-	u32_t  mFlags;
+	
+
+	u32_t mCertType;       //X509
+	u32_t  mCertFlags;     //X509_CA
+	u32_t mCertSubType;    //
+
 };
 
 

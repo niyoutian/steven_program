@@ -31,6 +31,15 @@ enum certificate_type_t {
 	CERT_GPG,
 };
 
+enum certificate_subtype_t {
+	/** subject certificate */
+	CERT_SUBTYPE_SUBJECT,
+	/** intermediate certificate in trustchain */
+	CERT_SUBTYPE_IM,
+	CERT_SUBTYPE_CA
+};
+
+
 /**
  * Result of a certificate validation.
  *

@@ -10,6 +10,7 @@
 #include "mxLog.h"
 #include "credMgr.h"
 
+credMgr* credMgr::mpInstance = NULL;
 
 credMgr::credMgr()
 {
@@ -22,6 +23,15 @@ credMgr::~credMgr()
 		delete mpCertMgr;
 	}
 }
+
+credMgr* credMgr::getInstance(void)
+{
+	if(mpInstance == NULL) {
+		mpInstance = new credMgr();
+	}
+	return mpInstance;
+}
+
 
 /**
  * load all certificates

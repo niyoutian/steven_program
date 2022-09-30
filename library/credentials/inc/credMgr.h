@@ -90,9 +90,11 @@ class credMgr
 public:
 	credMgr();
 	~credMgr();
+	static credMgr* getInstance(void);
 	void loadCerts(void);
 	certMgr* getCertMgr(void);
 private:
+	static credMgr* mpInstance;
 	u32_t loadCertDir(s8_t *path, u32_t certType, u32_t certFlag);
 	u32_t loadCertByType(s8_t *file, u32_t certType, u32_t certFlag);
 	certMgr *mpCertMgr;

@@ -21,6 +21,7 @@ public:
 	certX509* loadX509Cert(s8_t *filename);
 	certX509* loadX509CrlCert(s8_t *filename);
 	certX509* loadX509AttCert(s8_t *filename);
+	list <certX509*> getCertList(void);
 private:
 	u32_t getCertEncoding(s8_t *filename, u32_t& encoding);
 	list <certX509*> mCertList;

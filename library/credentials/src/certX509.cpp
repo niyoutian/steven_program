@@ -67,6 +67,8 @@ certX509::certX509()
 	mDerEncoding.len = 0;
 	mDerEncoding.ptr = NULL;
 	mCertType = CERT_ANY;
+	mCertFlags = X509_NONE;
+	mCertSubType = 0;
 }
 
 
@@ -105,6 +107,7 @@ u32_t certX509::loadX509CertFromPEM(s8_t *filename)
 	mpX509 = cert;
 	BIO_free(bio_cert);
 	transformX509ToDER();
+	parseCertExtensions();
 	return STATUS_SUCCESS;
 }
 
@@ -126,6 +129,7 @@ u32_t certX509::loadX509CertFromDER(s8_t *filename)
 	mpX509 = cert;
 	BIO_free(bio_cert);
 	transformX509ToDER();
+	parseCertExtensions();
 	return STATUS_SUCCESS;
 }
 
@@ -138,7 +142,7 @@ and "DER" respectively.  So i2d_TYPE converts from internal to DER.
 u32_t certX509::transformX509ToDER(void)
 {
 	mDerEncoding.len = i2d_X509_AUX(mpX509, &mDerEncoding.ptr);
-	mxLogFmt(LOG_DEBUG,"len:%u\n",mDerEncoding.len);
+	//mxLogFmt(LOG_DEBUG,"len:%u\n",mDerEncoding.len);
 	return STATUS_SUCCESS;
 }
 
@@ -165,6 +169,16 @@ chunk_t certX509::getSerialNum(void)
 u32_t certX509::getCertType(void)
 {
 	return mCertType;
+}
+
+u32_t certX509::getCertFlag(void)
+{
+	return mCertFlags;
+}
+
+void certX509::setCertFlag(u32_t flag)
+{
+	mCertFlags |= flag;
 }
 
 /*
@@ -491,14 +505,13 @@ u32_t certX509::parseCertExtensions(void)
  */
 bool certX509::parseBasicConstraintsExt(X509_EXTENSION *ext)
 {
-	u32_t flags = 0;
 	u8_t pathlen = 0;
 	BASIC_CONSTRAINTS *constraints;
 
 	constraints = (BASIC_CONSTRAINTS*)X509V3_EXT_d2i(ext);
 	if (constraints) {
 		if (constraints->ca) {
-			flags |= X509_CA;
+			mCertFlags |= X509_CA;
 		}
 		if (constraints->pathlen) {
 
@@ -537,7 +550,7 @@ bool certX509::parseKeyUsageExt(X509_EXTENSION *ext)
 				flags |= usage->data[1] << 8;
 			}
 			if (flags & X509v3_KU_CRL_SIGN){
-				this->mFlags |= X509_CRL_SIGN;
+				this->mCertFlags |= X509_CRL_SIGN;
 				mxLogFmt(LOG_DEBUG,"X509v3 Key Usage:CRL Sign\n");
 			}
 			if (flags & X509v3_KU_KEY_CERT_SIGN){
@@ -567,13 +580,13 @@ bool certX509::parseExtKeyUsageExt(X509_EXTENSION *ext)
 			switch (OBJ_obj2nid(sk_ASN1_OBJECT_value(usage, i)))
 			{
 				case NID_server_auth:
-					this->mFlags |= X509_SERVER_AUTH;
+					this->mCertFlags |= X509_SERVER_AUTH;
 					break;
 				case NID_client_auth:
-					this->mFlags |= X509_CLIENT_AUTH;
+					this->mCertFlags |= X509_CLIENT_AUTH;
 					break;
 				case NID_OCSP_sign:
-					this->mFlags |= X509_OCSP_SIGNER;
+					this->mCertFlags |= X509_OCSP_SIGNER;
 					break;
 				default:
 					break;

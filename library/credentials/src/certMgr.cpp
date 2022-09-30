@@ -6,6 +6,8 @@
 #include <string.h>
 #include "mxLog.h"
 #include "certMgr.h"
+#include "asn1Parser.h"
+
 
 
 
@@ -29,6 +31,7 @@ certMgr::~certMgr()
 
 /**
  * Load a CA certificate from disk
+ * X.509 Certification Authority (CA) certificates
  */
 certX509* certMgr::loadX509CaCert(s8_t *filename)
 {
@@ -46,12 +49,18 @@ certX509* certMgr::loadX509CaCert(s8_t *filename)
 	} else if (encoding == CERT_ENCODING_DER) {
 		pCert->loadX509CertFromDER(filename);
 	} else {
+		delete pCert;
+		return NULL;
+	}
+
+	if (!(pCert->getCertFlag() & X509_CA)) {
+		delete pCert;
 		return NULL;
 	}
 	mCertList.push_back(pCert);
 
 	chunk_t chunk = pCert->getCertSubjectString();
-	mxLogFmt(LOG_DEBUG,"loaded certificate %s from %s\n",chunk.ptr, filename);
+	mxLogFmt(LOG_DEBUG,"loaded CA certificate %s from %s\n",chunk.ptr, filename);
 	chunk_free(&chunk);
 	
 	return pCert;
@@ -59,14 +68,37 @@ certX509* certMgr::loadX509CaCert(s8_t *filename)
 
 /**
  * Load a AA certificate from disk
+ * X.509 Authorization Authority (AA) certificates
  */
 certX509* certMgr::loadX509AaCert(s8_t *filename)
 {
+	u32_t status = 0;
+	u32_t encoding = 0;
+	status = getCertEncoding(filename, encoding);
+	if (status != STATUS_SUCCESS) {
+		return NULL;
+	}
 	certX509 *pCert = new certX509();
 
+
+	if (encoding == CERT_ENCODING_PEM) {
+		pCert->loadX509CertFromPEM(filename);
+	} else if (encoding == CERT_ENCODING_DER) {
+		pCert->loadX509CertFromDER(filename);
+	} else {
+		delete pCert;
+		return NULL;
+	}
+
+	pCert->setCertFlag(X509_AA);
 	mCertList.push_back(pCert);
 
+	chunk_t chunk = pCert->getCertSubjectString();
+	mxLogFmt(LOG_DEBUG,"loaded AA certificate %s from %s\n",chunk.ptr, filename);
+	chunk_free(&chunk);
+	
 	return pCert;
+
 }
 
 
@@ -91,8 +123,11 @@ certX509* certMgr::loadX509Cert(s8_t *filename)
 	}
 	mCertList.push_back(pCert);
 
-	return pCert;
+	chunk_t chunk = pCert->getCertSubjectString();
+	mxLogFmt(LOG_DEBUG,"loaded EE certificate %s from %s\n",chunk.ptr, filename);
+	chunk_free(&chunk);
 
+	return pCert;
 }
 
 /**
@@ -128,6 +163,7 @@ u32_t certMgr::getCertEncoding(s8_t *filename,u32_t& encoding)
 {
 	s32_t fd = 0;
 	struct stat sb;
+	u32_t ret = 0;
 	
 	fd = open(filename, O_RDONLY);
 	if (fd == -1) {
@@ -157,12 +193,27 @@ u32_t certMgr::getCertEncoding(s8_t *filename,u32_t& encoding)
 		total += len;
 	}
 
-	if (sb.st_size >= 10 && strcmp(buf,"-----BEGIN") == 0) {
+	if (sb.st_size >= 10 && strncmp(buf,"-----BEGIN", strlen("-----BEGIN")) == 0) {
 		encoding = CERT_ENCODING_PEM;
+		ret = STATUS_SUCCESS;
+	} else {
+		chunk_t blob =  {(u8_t *)buf, sb.st_size};
+		asn1Parser *parser = new asn1Parser(NULL, {NULL, 0});
+		if (parser->isAsn1Encode(blob)) {
+			encoding = CERT_ENCODING_DER;
+			ret = STATUS_SUCCESS;
+		} else {
+			ret = STATUS_FAILED;
+		}
 	}
 
 	close(fd);
 	free(buf);
-	return STATUS_SUCCESS;
+	return ret;
+}
+
+list <certX509*> certMgr::getCertList(void)
+{
+	return mCertList;
 }
 
