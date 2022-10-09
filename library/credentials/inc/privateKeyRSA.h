@@ -10,7 +10,7 @@ class privateKeyRSA : public privateKey
 public: 
 	privateKeyRSA();
 	~privateKeyRSA();
-
+	virtual u32_t getKeyType(void) = 0;
 private:
 	//RSA *mpRSA;  /* RSA object from OpenSSL */
 };

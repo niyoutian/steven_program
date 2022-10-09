@@ -9,6 +9,10 @@
 #include "mxStatus.h"
 #include "mxLog.h"
 #include "credMgr.h"
+#include "mxLexparser.h"
+#include "privateKey.h"
+
+
 
 credMgr* credMgr::mpInstance = NULL;
 
@@ -40,24 +44,64 @@ credMgr* credMgr::getInstance(void)
 void credMgr::loadCerts(void)
 {
 	mxLogFmt(LOG_INFO,"loading ca certificates from '%s'\n",CA_CERTIFICATE_DIR);
-	loadCertDir(CA_CERTIFICATE_DIR, CERT_X509, X509_CA);
+	loadCertDir((s8_t *)CA_CERTIFICATE_DIR, CERT_X509, X509_CA);
 	
 	mxLogFmt(LOG_INFO,"loading aa certificates from '%s'\n",AA_CERTIFICATE_DIR);
-	loadCertDir(AA_CERTIFICATE_DIR, CERT_X509, X509_AA);
+	loadCertDir((s8_t *)AA_CERTIFICATE_DIR, CERT_X509, X509_AA);
 	
 	mxLogFmt(LOG_INFO,"loading ocsp signer certificates from '%s'\n",OCSP_CERTIFICATE_DIR);
-	loadCertDir(OCSP_CERTIFICATE_DIR, CERT_X509, X509_OCSP_SIGNER);
+	loadCertDir((s8_t *)OCSP_CERTIFICATE_DIR, CERT_X509, X509_OCSP_SIGNER);
 	
 	mxLogFmt(LOG_INFO,"loading attribute certificates from '%s'\n",ATTR_CERTIFICATE_DIR);
-	loadCertDir(ATTR_CERTIFICATE_DIR, CERT_X509_AC, 0);
+	loadCertDir((s8_t *)ATTR_CERTIFICATE_DIR, CERT_X509_AC, 0);
 
 	mxLogFmt(LOG_INFO,"loading crls certificates from '%s'\n",CRL_DIR);
-	loadCertDir(CRL_DIR, CERT_X509_CRL, 0);
+	loadCertDir((s8_t *)CRL_DIR, CERT_X509_CRL, 0);
 }
 
 void credMgr::loadSecrets(void)
 {
+	chunk_t data = {NULL, 0};
+	
 	mxLogFmt(LOG_INFO,"loading secrets from '%s'\n",SECRETS_FILE);
+
+	mxLexparser *parser = new mxLexparser();
+
+	parser->getChunkFromFile((s8_t *)SECRETS_FILE,data);
+
+	chunk_t src = data;
+	chunk_t line;
+	u32_t line_nr = 0;
+	u32_t keyType = 0;
+
+	while (parser->fetchLine(&src, &line) == STATUS_SUCCESS) {
+		chunk_t token = {NULL, 0};
+		line_nr++;
+		
+		printf("fetchLine: len=%u str=%s\n",line.len, line.ptr);
+		if (!parser->eatWhitespace(&line)) {
+			continue;
+		}
+		if (line.len > 2 && strncmp((const char *)line.ptr, ": ",strlen(": ")) == 0) {
+			/* no ids, skip the ':' */
+			//ids = chunk_empty;
+			line.ptr++;
+			line.len--;
+		} else {
+			printf("line %d: missing ' : ' separator\n", line_nr);
+			break;
+		}
+		if (!parser->eatWhitespace(&line) || (parser->extractToken(&token, ' ', &line)==STATUS_FAILED)) {
+			printf("line %d: missing token\n", line_nr);
+			break;
+		}
+		if (getKeyType(&token, keyType)!= STATUS_SUCCESS) {
+			break;
+		}
+		//loadKeyByType();
+	}
+	
+	
 }
 
 
@@ -85,7 +129,7 @@ u32_t credMgr::loadCertDir(s8_t *path, u32_t certType, u32_t certFlag)
 	s8_t fullName[128] = {0};
 
 	if (*path == '\0') {
-		path = "./";
+		path = (s8_t *)"./";
 	}
 
 	s32_t len = snprintf(fullName, sizeof(fullName)-1, "%s", path);
@@ -155,6 +199,25 @@ u32_t credMgr::loadCertByType(s8_t *file, u32_t certType, u32_t certFlag)
 		default:
 			break;
 	}
+	return STATUS_SUCCESS;
+}
+
+u32_t credMgr::getKeyType(chunk_t *token, u32_t &KeyType)
+{
+	if (token->len == strlen("RSA") && strncmp("RSA", (const char*)token->ptr, token->len) == 0) {
+		KeyType = KEY_RSA;
+	} else if (token->len == strlen("ECDSA") && strncmp("ECDSA", (const char*)token->ptr, token->len) == 0) {
+		KeyType = KEY_ECDSA;
+	} else if (token->len == strlen("BLISS") && strncmp("BLISS", (const char*)token->ptr, token->len) == 0) {
+		KeyType = KEY_BLISS;
+	} else {
+		return STATUS_FAILED;
+	}
+	return STATUS_SUCCESS;
+}
+
+u32_t credMgr::loadKeyByType(s8_t *file, u32_t KeyType)
+{
 	return STATUS_SUCCESS;
 }
 

@@ -37,8 +37,9 @@ void test_certX509(void)
 
 void test_credMgr(void)
 {
-	credMgr* cred = new credMgr();
-	cred->loadCerts();
+	credMgr* cred = credMgr::getInstance();
+	//cred->loadCerts();
+	cred->loadSecrets();
 }
 
 void test_publicKey(void)
@@ -74,9 +75,9 @@ void test_certList(void)
 int main(int argc, char* argv[])
 {
 	//test_certX509();
-	//test_credMgr();
+	test_credMgr();
 	//test_publicKey();
-	test_certList();
+	//test_certList();
     return 0;
 }
 
