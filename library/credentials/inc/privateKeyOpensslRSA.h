@@ -10,7 +10,10 @@ class privateKeyOpensslRSA : public privateKeyRSA
 public: 
 	privateKeyOpensslRSA();
 	~privateKeyOpensslRSA();
-	virtual u32_t getKeyType(void) = 0;
+	
+	virtual u32_t loadPriKeyFromPEM(s8_t *filename, chunk_t secret);
+	virtual u32_t loadPriKeyFromDER(s8_t *filename);
+
 private:
 	//RSA *mpRSA;  /* RSA object from OpenSSL */
 };

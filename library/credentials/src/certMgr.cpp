@@ -205,6 +205,7 @@ u32_t certMgr::getCertEncoding(s8_t *filename,u32_t& encoding)
 		} else {
 			ret = STATUS_FAILED;
 		}
+		delete parser;
 	}
 
 	close(fd);

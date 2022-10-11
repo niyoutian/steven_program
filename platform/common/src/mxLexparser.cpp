@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
-#include "mxDef.h"
 #include "mxStatus.h"
 #include "mxLog.h"
 #include "mxLexparser.h"
@@ -68,7 +67,7 @@ u32_t mxLexparser::fetchLine(chunk_t *src, chunk_t *line)
 		return STATUS_FAILED;
 	}
 	
-	if (extractToken(line, '\n', src) == STATUS_SUCCESS)
+	if (extractToken(src, '\n', line) == STATUS_SUCCESS)
 	{
 		if (line->len > 0 && *(line->ptr + line->len -1) == '\r') {
 			line->len--;  /* remove optional \r */
@@ -85,7 +84,7 @@ u32_t mxLexparser::fetchLine(chunk_t *src, chunk_t *line)
 	return STATUS_SUCCESS;
 }
 
-u32_t mxLexparser::extractToken(chunk_t *token, const char termination, chunk_t *src)
+u32_t mxLexparser::extractToken(chunk_t *src, const char termination, chunk_t *token)
 {
 	u8_t *eot = (u8_t *)memchr(src->ptr, termination, src->len);
 
@@ -113,8 +112,69 @@ u32_t mxLexparser::extractToken(chunk_t *token, const char termination, chunk_t 
 	src->len -= (token->len + 1);
 
 	return STATUS_SUCCESS;
-
 }
+
+u32_t mxLexparser::extractFilenameSecret(chunk_t *src, chunk_t *filename, chunk_t *secret)
+{
+	char delimiter = ' ';
+	
+	if (!eatWhitespace(src)) {
+		return STATUS_FAILED;
+	}
+	if (*src->ptr == '\'' || *src->ptr == '"')
+	{
+		delimiter = *src->ptr;
+		src->ptr++;  src->len--;
+	}
+	if (extractToken(src, delimiter, filename)==STATUS_FAILED) {
+		return STATUS_FAILED;
+	}
+
+	/* check for optional passphrase */
+	if (eatWhitespace(src)) {
+		if (eatWhitespace(src) == false) {
+			printf("missing secret\n");
+			return STATUS_FAILED;
+		}
+		
+		delimiter = ' ';
+		chunk_t raw_secret = {NULL, 0};
+		bool quotes = false;
+		
+		if (*src->ptr == '\'' || *src->ptr == '"') {
+			quotes = true; //代表有引号
+			delimiter = *src->ptr;
+			src->ptr++;  src->len--;
+		}
+		if (extractToken(src, delimiter, &raw_secret)==STATUS_FAILED) {
+			if (delimiter == ' ') {
+				raw_secret = *src;
+			} else {
+				printf("missing second delimiter\n");
+				return STATUS_FAILED;
+			}
+		}
+		if (quotes) {
+			/* treat as an ASCII string */
+			*secret = chunk_clone(raw_secret);
+			return STATUS_SUCCESS;
+		}
+		/* treat 0x as hex, 0s as base64 */
+		if (raw_secret.len > 2) {
+			if (strncasecmp("0x", (const char*)raw_secret.ptr, 2) == 0) {
+				//TODO
+			}
+			if (strncasecmp("0s", (const char*)raw_secret.ptr, 2) == 0) {
+				//TODO
+			}
+		}
+		*secret = chunk_clone(raw_secret);
+		return STATUS_SUCCESS;
+
+	}
+	return STATUS_SUCCESS;
+}
+
 
 bool mxLexparser::eatWhitespace(chunk_t *src)
 {
@@ -123,5 +183,27 @@ bool mxLexparser::eatWhitespace(chunk_t *src)
 	}
 	
 	return  src->len > 0 && *src->ptr != '#';
+}
+
+/**
+ * Converts a PEM encoded file into its binary form (RFC 1421, RFC 934)
+ */
+u32_t mxLexparser::convertPEM2BIN(chunk_t src, chunk_t &chunk)
+{
+#if 0
+	chunk_t line = {NULL, 0};
+	u32_t state  = PEM_PRE;
+	
+	while (fetchLine(&src, &line) == STATUS_SUCCESS) {
+		if (state == PEM_PRE) {
+			if (find_boundary("BEGIN", &line)) {
+				state = PEM_MSG;
+			}
+			continue;
+		}
+
+	}
+#endif
+	return STATUS_SUCCESS;
 }
 

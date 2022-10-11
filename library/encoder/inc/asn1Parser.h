@@ -1,6 +1,7 @@
 #ifndef __ASN1_PARSER_H__
 #define __ASN1_PARSER_H__
 #include "mxDef.h"
+#include "chunk.h"
 
 #if 1
 /**

@@ -73,6 +73,8 @@ void credMgr::loadSecrets(void)
 	chunk_t line;
 	u32_t line_nr = 0;
 	u32_t keyType = 0;
+	chunk_t filename = {NULL, 0};
+	chunk_t secret = {NULL, 0};
 
 	while (parser->fetchLine(&src, &line) == STATUS_SUCCESS) {
 		chunk_t token = {NULL, 0};
@@ -91,14 +93,28 @@ void credMgr::loadSecrets(void)
 			printf("line %d: missing ' : ' separator\n", line_nr);
 			break;
 		}
-		if (!parser->eatWhitespace(&line) || (parser->extractToken(&token, ' ', &line)==STATUS_FAILED)) {
+		if (!parser->eatWhitespace(&line) || (parser->extractToken(&line, ' ', &token)==STATUS_FAILED)) {
 			printf("line %d: missing token\n", line_nr);
 			break;
 		}
 		if (getKeyType(&token, keyType)!= STATUS_SUCCESS) {
 			break;
 		}
-		//loadKeyByType();
+		parser->extractFilenameSecret(&line, &filename, &secret);
+
+		s8_t fullName[128] = {0};
+		if (filename.len == 0) {
+			break;
+		}
+		if (*filename.ptr == '/') {
+			/* absolute path name */
+			snprintf(fullName, sizeof(fullName)-1, "%.*s", (int)filename.len, filename.ptr);
+		} else {
+			/* relative path name */
+			snprintf(fullName, sizeof(fullName)-1, "%s/%.*s", PRIVATE_KEY_DIR,(int)filename.len, filename.ptr);
+		}
+		
+		loadPriKeyByType(fullName, keyType, secret);
 	}
 	
 	
@@ -216,8 +232,15 @@ u32_t credMgr::getKeyType(chunk_t *token, u32_t &KeyType)
 	return STATUS_SUCCESS;
 }
 
-u32_t credMgr::loadKeyByType(s8_t *file, u32_t KeyType)
+u32_t credMgr::loadPriKeyByType(s8_t *file, u32_t KeyType, chunk_t secret)
 {
+	switch (KeyType) {
+		case KEY_RSA:
+			mpPrivateKeyMgr->loadPkcs1RsaPrivateKey(file,secret);
+			break;
+		default:
+			break;
+	}
 	return STATUS_SUCCESS;
 }
 

@@ -102,7 +102,7 @@ private:
 	u32_t loadCertDir(s8_t *path, u32_t certType, u32_t certFlag);
 	u32_t loadCertByType(s8_t *file, u32_t certType, u32_t certFlag);
 	u32_t getKeyType(chunk_t *token, u32_t &KeyType);
-	u32_t loadKeyByType(s8_t *file, u32_t KeyType);
+	u32_t loadPriKeyByType(s8_t *file, u32_t KeyType, chunk_t secret);
 	
 	certMgr *mpCertMgr;
 	privateKeyMgr *mpPrivateKeyMgr;

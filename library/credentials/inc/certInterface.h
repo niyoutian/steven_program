@@ -1,6 +1,7 @@
 #ifndef __CERT_INTERFACE_H__
 #define __CERT_INTERFACE_H__
 #include "mxDef.h"
+#include "chunk.h"
 //#include "mxStatus.h"
 
 /* constraints are currently restricted to the range 0..127 */
