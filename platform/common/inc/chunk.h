@@ -10,7 +10,10 @@
 /**
  * Empty chunk.
  */
-//chunk_t chunk_empty = { NULL, 0 };
+extern chunk_t chunk_empty;
+
+chunk_t chunk_skip(chunk_t chunk, size_t bytes);
+
 
 /**
  * Create a new chunk pointing to "ptr" with length "len"
@@ -62,6 +65,7 @@ static inline void chunk_printf(chunk_t chunk)
 }
 
 
+chunk_t chunk_from_base64(chunk_t base64, u8_t *buf);
 
 
 

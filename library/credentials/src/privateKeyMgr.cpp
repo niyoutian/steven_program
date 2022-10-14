@@ -7,6 +7,7 @@
 #include "mxLog.h"
 #include "privateKeyMgr.h"
 #include "privateKeyGmpRSA.h"
+#include "privateKeyOpensslRSA.h"
 #include "asn1Parser.h"
 
 
@@ -24,7 +25,28 @@ privateKeyMgr::~privateKeyMgr()
 	
 }
 
-privateKey* privateKeyMgr::loadPkcs1RsaPrivateKey(s8_t *filename,chunk_t secret)
+/*
+PEM 的 RSA 文件有如下四种:
+PKCS1  明文
+-----BEGIN RSA PRIVATE KEY-----
+-----END RSA PRIVATE KEY-----
+
+PKCS1  加密
+-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: AES-128-CBC,7E1D40A7901772BA4D22AF58AA2DC76F
+-----END RSA PRIVATE KEY-----
+
+PKCS8  明文
+-----BEGIN PRIVATE KEY-----
+-----END PRIVATE KEY-----
+
+PKCS8  加密
+-----BEGIN ENCRYPTED PRIVATE KEY-----
+-----END ENCRYPTED PRIVATE KEY-----
+
+*/
+privateKey* privateKeyMgr::loadRsaPrivateKey(s8_t *filename,chunk_t secret)
 {
 	u32_t status = 0;
 	u32_t encoding = 0;
@@ -35,16 +57,21 @@ privateKey* privateKeyMgr::loadPkcs1RsaPrivateKey(s8_t *filename,chunk_t secret)
 	}
 
 	privateKey *pRsaKey = new privateKeyGmpRSA();
+	/* PEM: openssl 不区分 PKCS1 和 PKCS8 格式的RSA */
+	//privateKey *pRsaKey = new privateKeyOpensslRSA();
 	
 	if (encoding == KEY_ENCODING_PEM) {
-		pRsaKey->loadPriKeyFromPEM(filename, secret);
+		status = pRsaKey->loadPriKeyFromPEM(filename, secret);
 	} else if (encoding == KEY_ENCODING_DER) {
-		//pRsaKey->loadX509CertFromDER(filename);
+		status = pRsaKey->loadPriKeyFromDER(filename);
 	} else {
+		status = STATUS_FAILED;
+	}
+	
+	if (status != STATUS_SUCCESS) {
 		delete pRsaKey;
 		return NULL;
 	}
-
 	mPriKeyList.push_back(pRsaKey);
 
 	/*chunk_t chunk = pCert->getCertSubjectString();
@@ -53,6 +80,12 @@ privateKey* privateKeyMgr::loadPkcs1RsaPrivateKey(s8_t *filename,chunk_t secret)
 	
 	return pRsaKey;
 }
+
+privateKey* privateKeyMgr::loadEcPrivateKey(s8_t *filename,chunk_t secret)
+{
+	return NULL;
+}
+
 
 /*
 .DER .CER，文件是二进制格式，只保存证书，不保存私钥。

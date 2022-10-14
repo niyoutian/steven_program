@@ -24,10 +24,12 @@ public:
 	u32_t fetchLine(chunk_t *src, chunk_t *line);
 	bool eatWhitespace(chunk_t *src);
 	u32_t extractToken(chunk_t *src, const char termination, chunk_t *token);
+	u32_t extractKeyValue(chunk_t *src, chunk_t *key, chunk_t *value);
 	u32_t extractFilenameSecret(chunk_t *src, chunk_t *filename, chunk_t *secret);
-	u32_t convertPEM2BIN(chunk_t src, chunk_t &chunk);
+	u32_t convertPEM2BIN(chunk_t &src);
 private:
-
+	bool findBoundary(chunk_t *line, char* tag);
+	u32_t analyseDataOfPEM(chunk_t line, u32_t &state, chunk_t *result);
 };
 
 

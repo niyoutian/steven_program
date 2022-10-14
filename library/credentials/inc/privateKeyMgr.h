@@ -17,7 +17,8 @@ class privateKeyMgr
 public:
 	privateKeyMgr();
 	~privateKeyMgr();
-	privateKey* loadPkcs1RsaPrivateKey(s8_t *filename,chunk_t secret);
+	privateKey* loadRsaPrivateKey(s8_t *filename,chunk_t secret);
+	privateKey* loadEcPrivateKey(s8_t *filename,chunk_t secret);
 private:
 	u32_t getKeyEncoding(s8_t *filename,u32_t& encoding);
 	

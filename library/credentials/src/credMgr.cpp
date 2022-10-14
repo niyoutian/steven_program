@@ -59,6 +59,33 @@ void credMgr::loadCerts(void)
 	loadCertDir((s8_t *)CRL_DIR, CERT_X509_CRL, 0);
 }
 
+/*
+$ sudo vi ipsec.secrets 
+
+# ipsec.secrets - strongSwan IPsec secrets file
+: RSA carolKey.pem "nH5ZQEWtku0RJEZ6"
+: RSA aliceKey.pem
+
+PKCS1  明文
+-----BEGIN RSA PRIVATE KEY-----
+-----END RSA PRIVATE KEY-----
+
+PKCS1  加密
+-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: AES-128-CBC,7E1D40A7901772BA4D22AF58AA2DC76F
+-----END RSA PRIVATE KEY-----
+
+PKCS8  明文
+-----BEGIN PRIVATE KEY-----
+-----END PRIVATE KEY-----
+
+PKCS8  加密
+-----BEGIN ENCRYPTED PRIVATE KEY-----
+-----END ENCRYPTED PRIVATE KEY-----
+
+
+*/
 void credMgr::loadSecrets(void)
 {
 	chunk_t data = {NULL, 0};
@@ -236,7 +263,10 @@ u32_t credMgr::loadPriKeyByType(s8_t *file, u32_t KeyType, chunk_t secret)
 {
 	switch (KeyType) {
 		case KEY_RSA:
-			mpPrivateKeyMgr->loadPkcs1RsaPrivateKey(file,secret);
+			mpPrivateKeyMgr->loadRsaPrivateKey(file,secret);
+			break;
+		case KEY_ECDSA:
+			mpPrivateKeyMgr->loadEcPrivateKey(file,secret);
 			break;
 		default:
 			break;

@@ -1,5 +1,7 @@
 #ifndef __PRIVATE_KEY_OPENSSL_RSA_H__
 #define __PRIVATE_KEY_OPENSSL_RSA_H__
+#include <openssl/pem.h>
+#include <openssl/pkcs12.h>
 #include "mxDef.h"
 #include "privateKeyRSA.h"
 
@@ -15,7 +17,9 @@ public:
 	virtual u32_t loadPriKeyFromDER(s8_t *filename);
 
 private:
-	//RSA *mpRSA;  /* RSA object from OpenSSL */
+	static s32_t pemPasswordCb (s8_t *buf, s32_t size, s32_t rwflag, void *userdata);
+	
+	EVP_PKEY *mpPriKey;
 };
 
 

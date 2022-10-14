@@ -21,11 +21,10 @@ u32_t privateKeyGmpRSA::loadPriKeyFromPEM(s8_t *filename, chunk_t secret)
 	
 	mxLexparser *parser = new mxLexparser();
 	chunk_t data = {NULL, 0};
-	chunk_t bin = {NULL, 0};
 
 	parser->getChunkFromFile(filename,data);
-
-	parser->convertPEM2BIN(data, bin);
+	/* decode PEM to ASN.1  PKCS1 or PKCS8 */
+	parser->convertPEM2BIN(data);
 	
 	return 0;
 }
