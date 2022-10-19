@@ -8,6 +8,7 @@
 #include "privateKeyMgr.h"
 #include "privateKeyGmpRSA.h"
 #include "privateKeyOpensslRSA.h"
+#include "privateKeyEC.h"
 #include "asn1Parser.h"
 
 
@@ -56,9 +57,9 @@ privateKey* privateKeyMgr::loadRsaPrivateKey(s8_t *filename,chunk_t secret)
 		return NULL;
 	}
 
-	privateKey *pRsaKey = new privateKeyGmpRSA();
+	//privateKey *pRsaKey = new privateKeyGmpRSA();
 	/* PEM: openssl 不区分 PKCS1 和 PKCS8 格式的RSA */
-	//privateKey *pRsaKey = new privateKeyOpensslRSA();
+	privateKey *pRsaKey = new privateKeyOpensslRSA();
 	
 	if (encoding == KEY_ENCODING_PEM) {
 		status = pRsaKey->loadPriKeyFromPEM(filename, secret);
@@ -83,7 +84,33 @@ privateKey* privateKeyMgr::loadRsaPrivateKey(s8_t *filename,chunk_t secret)
 
 privateKey* privateKeyMgr::loadEcPrivateKey(s8_t *filename,chunk_t secret)
 {
-	return NULL;
+	u32_t status = 0;
+	u32_t encoding = 0;
+	
+	status = getKeyEncoding(filename, encoding);
+	if (status != STATUS_SUCCESS) {
+		return NULL;
+	}
+
+	/* PEM: openssl 不区分 PKCS1 和 PKCS8 格式的EC */
+	privateKey *pEcKey = new privateKeyEC();
+	
+	if (encoding == KEY_ENCODING_PEM) {
+		status = pEcKey->loadPriKeyFromPEM(filename, secret);
+	} else if (encoding == KEY_ENCODING_DER) {
+		status = pEcKey->loadPriKeyFromDER(filename);
+	} else {
+		status = STATUS_FAILED;
+	}
+	
+	if (status != STATUS_SUCCESS) {
+		delete pEcKey;
+		return NULL;
+	}
+	mPriKeyList.push_back(pEcKey);
+
+	
+	return pEcKey;
 }
 
 

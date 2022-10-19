@@ -14,7 +14,7 @@ public:
 	virtual u32_t loadPriKeyFromPEM(s8_t *filename, chunk_t secret) = 0;
 	virtual u32_t loadPriKeyFromDER(s8_t *filename) = 0;
 private:
-	//RSA *mpRSA;  /* RSA object from OpenSSL */
+	
 };
 
 

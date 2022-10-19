@@ -236,6 +236,7 @@ u32_t mxLexparser::analyseDataOfPEM(chunk_t line, u32_t &state, chunk_t *result)
 	chunk_t data = chunk_empty;
 	chunk_t name  = chunk_empty;
 	chunk_t value = chunk_empty;
+	chunk_t dek = chunk_empty;
 	bool encrypted = false;
 
 	switch (state) {
@@ -269,7 +270,15 @@ u32_t mxLexparser::analyseDataOfPEM(chunk_t line, u32_t &state, chunk_t *result)
 			if ( (name.len == strlen("Proc-Type")) && (strncmp((const char*)name.ptr, "Proc-Type", strlen("Proc-Type")) == 0) 
 				&& value.len && *value.ptr == '4') {
 				encrypted = true;
+			} else if ((name.len == strlen("DEK-Info")) && (strncmp((const char*)name.ptr, "DEK-Info", strlen("DEK-Info")) == 0)) {
+				
+				if (extractToken(&value ,',', &dek) == STATUS_FAILED) {
+					dek = value;
+				}
+				if ( (value.len == strlen("DES-EDE3-CBC")) && (strncmp((const char*)name.ptr, "DES-EDE3-CBC", strlen("DES-EDE3-CBC")) == 0) ){
+				}
 			}
+			ret = STATUS_SUCCESS;
 			break;
 		case PEM_BODY:
 			if (findBoundary(&line, "END")) {
