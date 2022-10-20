@@ -69,4 +69,8 @@ s32_t privateKeyEC::pemPasswordCb (s8_t *buf, s32_t size, s32_t rwflag, void *us
 	return pSecret->len;
 }
 
+u32_t privateKeyEC::calcSignature(u32_t sign_type, chunk_t data, chunk_t *signature)
+{
+	return STATUS_SUCCESS;
+}
 

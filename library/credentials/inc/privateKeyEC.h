@@ -16,6 +16,7 @@ public:
 	virtual u32_t getKeyType(void);
 	virtual u32_t loadPriKeyFromPEM(s8_t *filename, chunk_t secret);
 	virtual u32_t loadPriKeyFromDER(s8_t *filename);
+	virtual u32_t calcSignature(u32_t sign_type, chunk_t data, chunk_t *signature);
 private:
 	static s32_t pemPasswordCb (s8_t *buf, s32_t size, s32_t rwflag, void *userdata);
 	

@@ -75,6 +75,7 @@ AC_CONFIG_FILES([Makefile
                  test/test_EVP/Makefile
                  test/test_xfrm/Makefile
                  test/test_cert/Makefile
+                 test/test_key/Makefile
 		 test/test_libcurl/Makefile
 		 test/test_libcurl/src/Makefile])
 AC_OUTPUT
