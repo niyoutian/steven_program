@@ -124,7 +124,7 @@ white = "\033[00;37m";
 */
 void mxLog::openConsoleColour(u32_t level)
 {
-#ifdef LOG_CONSOLE_COLOUR
+#if LOG_CONSOLE_COLOUR
 	switch(level) {
 		case LOG_EMERG:
 			printf("\033[00;35m");  //meganta
@@ -150,7 +150,7 @@ void mxLog::openConsoleColour(u32_t level)
 
 void mxLog::closeConsoleColour(void)
 {
-#ifdef LOG_CONSOLE_COLOUR
+#if LOG_CONSOLE_COLOUR
 	printf("\x1b[0m");
 #endif
 }
