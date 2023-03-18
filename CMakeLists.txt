@@ -11,3 +11,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 add_subdirectory(platform)
 add_subdirectory(algorithms)
+add_subdirectory(library)
+add_subdirectory(test)
+add_subdirectory(app)
+

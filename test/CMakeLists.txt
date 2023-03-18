@@ -1,0 +1,17 @@
+cmake_minimum_required (VERSION 2.8)
+
+
+add_subdirectory(test_BN)
+add_subdirectory(test_cert)
+add_subdirectory(test_crypto)
+add_subdirectory(test_ECDH)
+add_subdirectory(test_EVP)
+add_subdirectory(test_hash)
+add_subdirectory(test_key)
+add_subdirectory(test_libcurl)
+add_subdirectory(test_multicast)
+add_subdirectory(test_rsa)
+add_subdirectory(test_rsautl)
+add_subdirectory(test_tcp_nonblock)
+add_subdirectory(test_tls)
+add_subdirectory(test_xfrm)
