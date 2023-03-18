@@ -8,14 +8,14 @@ using namespace std;
 
 /**
 * @file mxStatus.h
-* @brief ÏµÍ³ÔËÐÐ×´Ì¬Âë
-* @details Ó¦ÓÃ³ÌÐòµÄº¯Êý·µ»ØÖµ
-* @mainpage ¹¤³Ì¸ÅÀÀ
+* @brief ÏµÍ³ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½
+* @details Ó¦ï¿½Ã³ï¿½ï¿½ï¿½Äºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
+* @mainpage ï¿½ï¿½ï¿½Ì¸ï¿½ï¿½ï¿½
 * @author steven
 * @email niyoutian_0510@163.com
 * @version V1.0
 * @date 
-* @license °æÈ¨
+* @license ï¿½ï¿½È¨
 */
 
 typedef enum 
@@ -23,7 +23,8 @@ typedef enum
 	STATUS_SUCCESS,       /*  Call succeeded  */
 	STATUS_FAILED,		  /** Call failed */  
 	STATUS_CONTINUE, 	  /*  Call continue  */
-	STATUS_END            ///< Õ¼Î»£¬ÎÞÊµ¼Ê×÷ÓÃ
+	STATUS_ERR_PARAMETER, 
+	STATUS_END            ///< Õ¼Î»ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 }Status_e;
 
 

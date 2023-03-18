@@ -4,10 +4,18 @@
 #include <stdarg.h>
 #include <syslog.h>
 #include "mxDef.h"
+#include "mxStatus.h"
+
+#define LOG_FILE_NAME(x) strrchr(x,'/')?strrchr(x,'/')+1:x
+/*use LOG_LOCAL2 to store the log */
+#define LOG_FACILITY		LOG_LOCAL2
+#define LOG_MAX_DATA        256
+#define LOG_CONSOLE_COLOUR   1
 
 enum {
-	MXLOG_SYSLOG = (1 << 0),
-	MXLOG_STDIO  = (1 << 1)
+	MXLOG_SYSLOG   = (1 << 0),
+	MXLOG_CONSOLE  = (1 << 1),
+	MXLOG_NONE     = (1 << 2)
 };
 
 
@@ -27,30 +35,30 @@ level
        The function setlogmask(3) can be used to restrict logging to specified levels only.
 
 */
-/*use LOG_LOCAL2 to store the log */
-#define LOG_FACILITY		LOG_LOCAL2
-#define LOG_MAX_DATA        256
-#define LOG_LEVEL           LOG_DEBUG
+
 class mxLog
 {
 public:
 	mxLog();
 	~mxLog();
 	static mxLog* getInstance(void);
-	void initialize(u32_t channel, const s8_t *ident);
+	u32_t initialize(u32_t channel, u32_t level, const s8_t *ident);
 	void logFmt(s32_t level,const s8_t* file, const s8_t* function, 
 						const s32_t line,const s8_t* format, ...);
 private:
+	const char *getLevelString(u32_t level);
+	void openConsoleColour(u32_t level);
+	void closeConsoleColour(void);
+
+
 	static mxLog* mpInstance;
 	u32_t  mxLogChannel;
+	u32_t  mxLogLevel;
 	const s8_t *mxIdent;
 };
 
 #define mxLogInit(ident) \
-		mxLog::getInstance()->initialize(MXLOG_SYSLOG, ident)
-
-#define mxLogInit2(channel, ident) \
-		mxLog::getInstance()->initialize(channel, ident)
+		mxLog::getInstance()->initialize(MXLOG_SYSLOG, LOG_DEBUG, ident)
 
 #define mxLogFmt(level,fmt,...) \
 		mxLog::getInstance()->logFmt(level , __FILE__,  __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)

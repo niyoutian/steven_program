@@ -7,7 +7,7 @@
 void test_certX509(void)
 {
 	certX509 *cert = new certX509();
-	mxLogInit2(MXLOG_STDIO, "Test");
+	mxLogInit("Test");
 	mxLogFmt(LOG_DEBUG,"steven test");
 
 	printf("enter cert\n");
