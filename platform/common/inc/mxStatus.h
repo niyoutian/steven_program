@@ -20,11 +20,11 @@ using namespace std;
 
 typedef enum 
 {
-	STATUS_SUCCESS,       /*  Call succeeded  */
-	STATUS_FAILED,		  /** Call failed */  
-	STATUS_CONTINUE, 	  /*  Call continue  */
-	STATUS_ERR_PARAMETER, 
-	STATUS_END            ///< ռλ����ʵ������
+	STATUS_SUCCESS,           /**< Call succeeded */
+	STATUS_FAILED,		      /**< Call failed */
+	STATUS_CONTINUE, 	      /**< Call continue */
+	STATUS_ERR_PARAMETER,     /**< parameter failed */
+	STATUS_END                /**< not use */
 }Status_e;
 
 
