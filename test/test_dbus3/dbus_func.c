@@ -40,6 +40,8 @@ int init_dbus(char *request_bus_name, DBusConnection **conn, char **unique_bus_n
         return -1;
 	}
 
+    //dbus_bus_add_match (connection, "type='signal',interface='org.freedesktop.DBus',member='NameOwnerChanged'", &dbus_error);
+
     char *unique_name = NULL;
     unique_name = dbus_bus_get_unique_name(connection);
     printf("init_dbus unique name:%s\n",unique_name);

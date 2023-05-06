@@ -1,5 +1,3 @@
-cmake_minimum_required (VERSION 2.8)
-
 project(test_dbus2)
 
 include_directories(

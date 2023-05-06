@@ -1,6 +1,3 @@
-cmake_minimum_required (VERSION 2.8)
-
-
 add_subdirectory(test_BN)
 add_subdirectory(test_cert)
 add_subdirectory(test_crypto)
@@ -18,3 +15,6 @@ add_subdirectory(test_xfrm)
 #add_subdirectory(test_dbus)
 #add_subdirectory(test_dbus2)
 #add_subdirectory(test_dbus3)
+add_subdirectory(test_dbus4)
+add_subdirectory(test_mydbus)
+add_subdirectory(test_timer)

@@ -86,46 +86,87 @@ void *server_dbus_recv(void *arg)
 	DBusMessageIter ags;
 	DBusMessageIter subags;
 	void* ptr;
+    const char * sender = NULL;
+    const char * dst = NULL;
+    u_int32_t serial = 0;
     const char * path = NULL;
     const char * intf = NULL;
     const char * name = NULL;
     register_app_t *register_app = NULL;
     int n_elements = 0;
+    int ret = 0;
 
     struct server_dbus_data *server_data = (struct server_dbus_data *)arg;
 
     dbus_error_init(&dbus_error); 
 	while (1) {
         //0 非阻塞监听信号; -1 阻塞
-		dbus_connection_read_write(g_server_data.connection, 10);
+		dbus_connection_read_write(g_server_data.connection, 0);
 		msg = dbus_connection_pop_message(g_server_data.connection);
 		if (NULL == msg) {
+            sleep(1);
 			continue;
 		}
+        sender = dbus_message_get_sender(msg);
+        printf("****************sender %s\n",sender);
+
+        dst = dbus_message_get_destination(msg);
+        if (dst != NULL) {
+            printf("destination %s\n",dst);
+        } else {
+             printf("destination is NULL\n");
+        }
+
+        serial = dbus_message_get_serial(msg);
+        printf("serial %d\n",serial);
 
         path = dbus_message_get_path(msg);
         if(NULL==path) {
             continue;
         }
-        //printf("server recv path %s\n",path);
-        if (strncmp(path, g_server_data.object_path_name, strlen(g_server_data.object_path_name))) {
-            continue;
-        }
+        printf("server recv path %s\n",path);
+        // if (strncmp(path, g_server_data.object_path_name, strlen(g_server_data.object_path_name))) {
+        //     continue;
+        // }
 
         intf = dbus_message_get_interface(msg);
         if(NULL==intf) {
             continue;
         }
-        //printf("server recv interface %s\n",intf);
+        printf("server recv interface %s\n",intf);
 
         name = dbus_message_get_member(msg);
         if(NULL==name) {
             continue;
         }
-        //printf("server recv member %s\n",name);
+        printf("server recv member %s\n",name);
 
+        if (dbus_message_is_signal(msg, DBUS_INTERFACE_LOCAL,"Disconnected")) {
+            printf("Disconnected\n");
+        }
+        else if (dbus_message_is_signal(msg, DBUS_INTERFACE_DBUS,"NameOwnerChanged")) {
 
-        if(dbus_message_is_method_call(msg,g_server_data.interface_name ,g_server_data.method_name)) {
+            printf("NameOwnerChanged\n");
+			if (!dbus_message_iter_init(msg, &ags)) {
+				fprintf(stderr, "Message has no arguments\n");
+			}
+            do {
+                ret = dbus_message_iter_get_arg_type(&ags);
+                printf("message type:%d\n",ret);
+                if (ret != DBUS_TYPE_STRING) {
+                    printf("message type error:%d\n",ret);
+                }
+                char *pdata = NULL;
+                dbus_message_iter_get_basic(&ags, &pdata);
+                printf("data len:%d\n",strlen(pdata));
+                if (pdata == NULL) {
+                    printf("data is NULL\n");
+                } else {
+                    printf("data:%s\n",pdata);
+                }
+            } while(dbus_message_iter_next(&ags));
+        }
+        else if(dbus_message_is_method_call(msg,g_server_data.interface_name ,g_server_data.method_name)) {
             //printf("receive method call %s\n",g_server_data.method_name);
 
 			if (!dbus_message_iter_init(msg, &ags)) {
@@ -133,7 +174,6 @@ void *server_dbus_recv(void *arg)
 			}
 			dbus_message_iter_recurse(&ags, &subags);
 			dbus_message_iter_get_fixed_array(&subags, &ptr, &n_elements);
-           // printf("n_elements:%d\n",n_elements);
 			register_app = (register_app_t*)ptr;
 			printf("[register_app]: receive a struct : app_ip = 0x%04x, bus_id=%s, size = %d\n",
                      register_app->app_ip,  register_app->bus_id, register_app->size);
@@ -199,6 +239,89 @@ void *server_dbus_send(void *arg)
 }
 
 
+void test_add_watch(void)
+{
+    DBusMessage *msg = NULL;
+    DBusMessageIter sendIter;
+    //const char *watch ="type='signal',sender='org.freedesktop.DBus',interface='org.freedesktop.DBus',member='NameOwnerChanged'";
+    //const char *watch ="type='signal',interface='org.freedesktop.DBus',member='NameOwnerChanged'";   //OK
+    //const char *watch ="type='signal',sender='org.freedesktop.DBus',path='/org/freedesktop/DBus',interface='org.freedesktop.DBus',member='NameOwnerChanged'";
+    const char *watch ="type='signal',sender='org.freedesktop.DBus',path='/org/freedesktop/DBus',interface='org.freedesktop.DBus',member='NameOwnerChanged'";
+
+    msg = dbus_message_new_method_call(DBUS_SERVICE_DBUS, DBUS_PATH_DBUS, DBUS_INTERFACE_DBUS, "AddMatch");
+    if(msg == NULL){
+        fprintf(stderr, "MessageNULL");
+        return NULL;
+    }
+    dbus_message_set_no_reply(msg, true);
+    dbus_message_iter_init_append(msg, &sendIter);/*  为消息添加参数           */
+    dbus_message_iter_append_basic(&sendIter, DBUS_TYPE_STRING, &watch);
+    if (!dbus_connection_send(g_server_data.connection , msg, NULL)) {
+        fprintf(stderr, "[dbus_base]: esomeip_send_msg Out Of Memory!\n");
+    }
+
+    dbus_connection_flush(g_server_data.connection);
+    dbus_message_unref(msg);   /*  释放消息              */
+    printf("send data \n");
+
+}
+
+static dbus_bool_t become_monitor(DBusConnection *connection, int numFilters, const char * const *filters)
+{
+  DBusError error = DBUS_ERROR_INIT;
+  DBusMessage *m;
+  DBusMessage *r;
+  int i;
+  dbus_uint32_t zero = 0;
+  DBusMessageIter appender, array_appender;
+
+  m = dbus_message_new_method_call (DBUS_SERVICE_DBUS,
+      DBUS_PATH_DBUS, DBUS_INTERFACE_MONITORING, "BecomeMonitor");
+
+  if (m == NULL)
+    printf("becoming a monitor");
+
+  dbus_message_iter_init_append (m, &appender);
+
+  if (!dbus_message_iter_open_container (&appender, DBUS_TYPE_ARRAY, "s",
+        &array_appender))
+    printf ("opening string array");
+
+  for (i = 0; i < numFilters; i++)
+    {
+      if (!dbus_message_iter_append_basic (&array_appender, DBUS_TYPE_STRING,
+            &filters[i]))
+        printf ("adding filter to array");
+    }
+
+  if (!dbus_message_iter_close_container (&appender, &array_appender) ||
+      !dbus_message_iter_append_basic (&appender, DBUS_TYPE_UINT32, &zero))
+    printf ("finishing arguments");
+
+  r = dbus_connection_send_with_reply_and_block (connection, m, -1, &error);
+
+  if (r != NULL)
+    {
+      dbus_message_unref (r);
+    }
+  else if (dbus_error_has_name (&error, DBUS_ERROR_UNKNOWN_INTERFACE))
+    {
+      fprintf (stderr, "dbus-monitor: unable to enable new-style monitoring, "
+          "your dbus-daemon is too old. Falling back to eavesdropping.\n");
+      dbus_error_free (&error);
+    }
+  else
+    {
+      fprintf (stderr, "dbus-monitor: unable to enable new-style monitoring: "
+          "%s: \"%s\". Falling back to eavesdropping.\n",
+          error.name, error.message);
+      dbus_error_free (&error);
+    }
+
+  dbus_message_unref (m);
+
+  return (r != NULL);
+}
 // dbus-send --session --print-reply --type=method_call --dest=dbus.method.daemon1 /esomeip/method/Object  esomeip.app.register  string:'abc'
 // dbus-send --session --print-reply --type=method_call --dest=dbus.method.daemon1 /esomeip/method/Object  esomeip.app.register  byte:0x01
 // dbus-send [--system | --session] --type=method_call --print-reply --dest=连接名 对象路径 接口名.方法名 参数类型:参数值 参数类型:参数值
@@ -212,11 +335,23 @@ int test_server_case1(void)
     g_server_data.interface_name = ESOMEIP_DBUS_I_APP;
     g_server_data.method_name = ESOMEIP_DBUS_M_REGISTER;
     init_dbus(g_server_data.request_bus_name, &g_server_data.connection, &g_server_data.unique_bus_name);
+    DBusError dbus_error;	
+    dbus_error_init(&dbus_error); 
+    dbus_bus_add_match (g_server_data.connection, "type='signal',interface='org.freedesktop.DBus',member='NameOwnerChanged'", &dbus_error);
+    //test_add_watch();
+
+    //dbus_connection_set_route_peer_messages (g_server_data.connection, TRUE);
+
+    // bool b_ret = false;
+    // int numFilters = 0;
+    // char **filters = NULL;
+    // b_ret = become_monitor(g_server_data.connection, numFilters, (const char * const *)filters);
+    // printf("b_ret=%d\n",b_ret);
 
     pthread_create(&g_server_recv_id, NULL, server_dbus_recv, &g_server_data);
-    pthread_create(&g_server_send_id, NULL, server_dbus_send, &g_server_data);
+    // pthread_create(&g_server_send_id, NULL, server_dbus_send, &g_server_data);
     pthread_join(g_server_recv_id, NULL);
-    pthread_join(g_server_send_id, NULL);
+    // pthread_join(g_server_send_id, NULL);
     printf("exit \n");
 
     return 0;

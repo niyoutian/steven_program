@@ -24,6 +24,8 @@ typedef enum
 	STATUS_FAILED,		      /**< Call failed */
 	STATUS_CONTINUE, 	      /**< Call continue */
 	STATUS_ERR_PARAMETER,     /**< parameter failed */
+	STATUS_ERR_MALLOC,        /**< malloc failed */
+	STATUS_WAKE_UP,           /**< wake up timer */
 	STATUS_END                /**< not use */
 }Status_e;
 

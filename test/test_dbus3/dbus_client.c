@@ -47,9 +47,10 @@ void *client_dbus_recv(void *arg)
     dbus_error_init(&dbus_error); 
 	while (1) {
         //0 非阻塞监听信号; -1 阻塞
-		dbus_connection_read_write(g_client_data.connection, 10);
+		dbus_connection_read_write(g_client_data.connection, 0);
 		msg = dbus_connection_pop_message(g_client_data.connection);
 		if (NULL == msg) {
+            sleep(1);
 			continue;
 		}
 

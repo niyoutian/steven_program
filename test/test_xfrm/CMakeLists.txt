@@ -1,5 +1,3 @@
-cmake_minimum_required (VERSION 2.8)
-
 project(test_xfrm)
 
 SET(CMAKE_BUILD_TYPE "Debug")

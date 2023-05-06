@@ -26,4 +26,7 @@ INPUT  = /home/steven/study/steven_program
 
 在生成的latex目录下执行make 命令
 
-
+# need lib
+sudo apt-get install libssl-dev
+sudo apt-get install libglib2.0-dev
+sudo apt-get install libdbus-glib-1-dev
