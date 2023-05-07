@@ -26,6 +26,7 @@ typedef enum
 	STATUS_ERR_PARAMETER,     /**< parameter failed */
 	STATUS_ERR_MALLOC,        /**< malloc failed */
 	STATUS_WAKE_UP,           /**< wake up timer */
+	STATUS_EXIST,           /**< already exist */
 	STATUS_END                /**< not use */
 }Status_e;
 

@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 3.0)
 project(steven_program)
 
 SET(CMAKE_BUILD_TYPE "Debug")
+SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb")
 
 SET(PROJECT_ROOT_DIR ${PROJECT_SOURCE_DIR})
 
