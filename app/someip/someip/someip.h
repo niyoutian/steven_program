@@ -4,9 +4,21 @@
 #include "mxDef.h"
 #include "service_interface.h"
 #include "serviceDatabase.h"
+#include "sdProxy.h"
 
 using namespace std;
 
+ /**
+ * @brief		someip 实例
+ * @details	    用户调用 someipMgr 类完成someip操作
+ * @class       someipMgr
+ * @par 标识符
+ * 		保留
+ * @par 其它
+ * 		无
+ * @par 修改日志
+ * @note 
+ */
 class someipMgr
 {
 public:
@@ -34,6 +46,7 @@ private:
 	u32_t             mStatus;
 
 	serviceDatabase  *mpDatabase;      /**< 与someip service 数据库 */
+	sdProxy          *mpSdProxy;
 };
 
 #endif

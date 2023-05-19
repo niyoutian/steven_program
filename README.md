@@ -30,3 +30,4 @@ INPUT  = /home/steven/study/steven_program
 sudo apt-get install libssl-dev
 sudo apt-get install libglib2.0-dev
 sudo apt-get install libdbus-glib-1-dev
+sudo apt-get install libmysqlclient-dev

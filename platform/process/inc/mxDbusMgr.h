@@ -1,12 +1,19 @@
 #ifndef __MX_DBUS_MGR_H__
 #define __MX_DBUS_MGR_H__
-#include <list>
+#include<vector>
 #include <dbus/dbus.h>
 #include "mxDef.h"
 #include "mxMutex.h"
 #include "mxStatus.h"
 
 using namespace std;
+
+typedef struct dbus_signal_s
+{
+	string path;
+	string inter;
+	string signal_name;
+} dbus_signal_t;
 
 typedef struct dbus_method_s
 {
@@ -38,7 +45,8 @@ private:
     pthread_t          		mThreadId;
     bool              	    mStatus;
 
-    list <dbus_method_t *> mMethodList;  /**< 记录方法集 */
+    vector <dbus_method_t *> mMethodArray;  /**< 记录方法集 */
+    vector <dbus_signal_t *> mSignalArray;  /**< 记录信号集 */
 };
 
 

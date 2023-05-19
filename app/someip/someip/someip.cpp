@@ -9,6 +9,7 @@ someipMgr::someipMgr()
 {
 	mAppId = 0;
 	mpDatabase = new serviceDatabase;
+	mpSdProxy = new sdProxy;
 }
 
 someipMgr::~someipMgr()
@@ -24,6 +25,19 @@ someipMgr* someipMgr::getInstance(void)
 	return mpInstance;
 }
 
+ /**
+ * @brief		init someip service
+ * @details	    This is the detail description. 
+ * @param[in]	
+ * @retval		STATUS_SUCCESS		成功
+ * @retval		STATUS_FAILED	错误 
+ * @par 标识符
+ * 		保留
+ * @par 其它
+ * 		无
+ * @par 修改日志
+ * @note 
+ */
 u32_t someipMgr::initService(u32_t appid, string name)
 {
 	mAppId = appid;

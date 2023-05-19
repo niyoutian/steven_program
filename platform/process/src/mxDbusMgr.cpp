@@ -126,12 +126,12 @@ void mxDbusMgr::runDbusTask(void)
 	mMutex.unlock();
 
     while (mStatus) {
-		dbus_connection_read_write(mpConnect, 0);
-		msg = dbus_connection_pop_message(mpConnect);
-		if (NULL == msg) {
+        dbus_connection_read_write(mpConnect, 0);
+        msg = dbus_connection_pop_message(mpConnect);
+        if (NULL == msg) {
             usleep(1000*10);
-			continue;
-		}
+            continue;
+        }
         sender = dbus_message_get_sender(msg);
         dst = dbus_message_get_destination(msg);
         serial = dbus_message_get_serial(msg);
@@ -146,6 +146,10 @@ void mxDbusMgr::runDbusTask(void)
 
 u32_t mxDbusMgr::registerDbusMethod(dbus_method_t *method)
 {
+    vector<dbus_method_t *>::iterator iter;
+    for(iter=mMethodArray.begin(); iter!=mMethodArray.end(); iter++){
+
+    }
     return 0;
 }
 
