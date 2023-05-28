@@ -1,0 +1,29 @@
+{
+    "client":  {
+        "ip": "172.100.10.165",
+        "port": 888           
+    },
+    "ecu":  [
+        {
+            "channel_type": "UDP",    
+            "ip": "172.100.10.166",    
+            "mgr_port": "8888",
+            "project_dir":"/home/steven/work/2023-05/esomeip/build_dir/bin",           
+            "test_dir":"/home/steven/work/2023-05/evisionstack_test/build_dir/bin"
+        },
+        {
+            "channel_type": "UDP",
+            "ip": "172.100.10.167",    
+            "mgr_port": "8888",
+            "project_dir":"/home/steven/work/2023-05/esomeip/build_dir/bin",
+            "test_dir":"/home/steven/work/2023-05/evisionstack_test/build_dir/bin"
+        },
+        {
+            "channel_type": "UDP",
+            "ip": "172.100.10.168",    
+            "mgr_port": "8888",
+            "project_dir":"/home/steven/work/2023-05/esomeip/build_dir/bin",
+            "test_dir":"/home/steven/work/2023-05/evisionstack_test/build_dir/bin"
+        }
+    ]
+}
